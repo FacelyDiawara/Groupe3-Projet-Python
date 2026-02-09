@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+requests
+twilio
+reportlab
+jinja2
+python-multipart

@@ -1,0 +1,103 @@
+from pydantic import BaseModel
+from typing import Optional, List
+
+# Doctor schemas
+class DoctorBase(BaseModel):
+    nom: str
+    prenom: str
+    specialite: str
+    telephone: str
+    email: str
+    role: Optional[str] = "Docteur"
+    photo_path: Optional[str] = None
+
+class DoctorCreate(DoctorBase):
+    pass
+
+class Doctor(DoctorBase):
+    id: int
+
+    model_config = {
+        "from_attributes": True
+    }
+
+# Appointment schemas
+class AppointmentBase(BaseModel):
+    nom_patient: str
+    prenom_patient: str
+    telephone_patient: str
+    sexe_patient: str
+    docteur_name: str
+    date: str
+    heure: str
+
+class AppointmentCreate(AppointmentBase):
+    pass
+
+class Appointment(AppointmentBase):
+    id: int
+
+    model_config = {
+        "from_attributes": True
+    }
+
+# Medication schemas
+class MedicationBase(BaseModel):
+    nom_produit: str
+    dose: str
+    quantite: int
+    date_prescription: str
+
+class MedicationCreate(MedicationBase):
+    pass
+
+class Medication(MedicationBase):
+    id: int
+
+    model_config = {
+        "from_attributes": True
+    }
+
+# Reminder schemas
+class ReminderBase(BaseModel):
+    nom_patient: str
+    prenom_patient: str
+    telephone_patient: str
+    medicaments: str
+    date_debut: str
+    duree: int
+    matin: str
+    soir: str
+    type_canal: str
+
+class ReminderCreate(ReminderBase):
+    pass
+
+class Reminder(ReminderBase):
+    id: int
+
+    model_config = {
+        "from_attributes": True
+    }
+
+# Prescription schemas
+class PrescriptionBase(BaseModel):
+    nom_patient: str
+    prenom_patient: str
+    telephone_patient: str
+    sexe_patient: str
+    nom_docteur: str
+    telephone_docteur: str
+    medicaments: str
+    date_prescription: str
+    duree_jours: int
+
+class PrescriptionCreate(PrescriptionBase):
+    pass
+
+class Prescription(PrescriptionBase):
+    id: int
+
+    model_config = {
+        "from_attributes": True
+    }
