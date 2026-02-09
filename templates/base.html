@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Hôpital Central{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <div class="nav-buttons">
+        <a href="/" class="nav-btn" data-page="home">ACCUEIL</a>
+        <a href="/appointments" class="nav-btn" data-page="appointments">GESTION DES PATIENTS</a>
+        <a href="/users" class="nav-btn" data-page="users">UTILISATEUR</a>
+        <a href="/medications" class="nav-btn" data-page="medications">PRISE DE MÉDICAMENT</a>
+        <a href="/sms" class="nav-btn" data-page="sms">GÉNÉRER SMS</a>
+        <a href="/whatsapp" class="nav-btn" data-page="whatsapp">GÉNÉRER WHATSAPP</a>
+        <a href="/chat" class="nav-btn" data-page="chat">DISCUSSION</a>
+        <a href="/patients_list" class="nav-btn" data-page="patients_list">LISTE DE NOS PATIENT</a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content">{% block content %}{% endblock %}</main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      © 2026 Hôpital Central | Urgences : 15 | contact@hopitalcentral.sn
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

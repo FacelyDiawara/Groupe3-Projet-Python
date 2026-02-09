@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Ordonnance - PHARMACIE LABE{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div id="prescription-content" style="background: white; padding: 40px; max-width: 800px; margin: 0 auto; color: #000; font-family: 'Courier New', Courier, monospace; border: 1px solid #ccc;">
+        <!-- Entête Simplifiée -->
+        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+            <h1 style="margin: 0; font-size: 28px; letter-spacing: 2px;">ORDONNANCE PHARMACIE LABE</h1>
+        </div>
+        
+        <!-- Infos Docteur et Patient sur la même ligne -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 15px;">
+            <!-- Gauche: Docteur -->
+            <div style="width: 45%;">
+                <p style="margin: 0;"><strong>DOCTEUR :</strong></p>
+                <div id="doctorBox" style="margin-top: 5px;">
+                    <p style="margin: 2px 0;">Dr. <span id="doctorNamePrint"></span></p>
+                    <p style="margin: 2px 0; font-size: 13px;" id="doctorSpecialityPrint">Médecin Généraliste</p>
+                    <p style="margin: 2px 0; font-size: 13px;" id="doctorPhonePrint"></p>
+                </div>
+            </div>
+            
+            <!-- Droite: Patient -->
+            <div style="width: 45%; text-align: right;">
+                <p style="margin: 0;"><strong>PATIENT :</strong></p>
+                <div id="patientBox" style="margin-top: 5px;">
+                    <p style="margin: 2px 0;"><span id="patientNamePrint"></span></p>
+                    <p style="margin: 2px 0; font-size: 13px;">Tél: <span id="patientPhonePrint"></span></p>
+                    <p style="margin: 2px 0; font-size: 13px;">Le <span id="datePrint"></span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="font-size: 20px; text-decoration: underline;">ORDONNANCE</h2>
+        </div>
+        
+        <!-- Corps de l'ordonnance: Nom + Dose sur la même ligne -->
+        <div style="margin-bottom: 60px; min-height: 200px;">
+            <div id="medicationsList" style="line-height: 1.8; font-size: 18px;">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Signature et Cachet en bas à droite -->
+        <div style="text-align: right; margin-top: 40px;">
+            <div style="display: inline-block; text-align: center;">
+                <p style="margin: 0; font-size: 14px; text-decoration: underline;">Signature et Cachet</p>
+                <div style="height: 100px; width: 220px; margin-top: 10px; border: 1px dashed #eee;"></div>
+                <p style="margin: 10px 0 0 0;"><strong>Dr. <span id="doctorSignature"></span></strong></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Boutons d'Action -->
+    <div style="text-align: center; margin-top: 30px; padding-bottom: 50px;" class="no-print">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ IMPRIMER / ENREGISTRER</button>
+        <button class="btn btn-danger" onclick="finishAndClear()">✅ TERMINER & TOUT EFFACER</button>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print, 
+        nav, 
+        footer, 
+        .page-title {
+            display: none !important;
+        }
+        
+        .page-container {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        #prescription-content {
+            border: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 20px !important;
+        }
+        
+        body {
+            background: white !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Chargement des données session
+        const patientName = sessionStorage.getItem('patientName') || 'Non précisé';
+        const patientPhone = sessionStorage.getItem('patientPhone') || '-';
+        const doctorName = sessionStorage.getItem('doctorName') || 'Non précisé';
+        const doctorPhone = sessionStorage.getItem('doctorPhone') || '';
+        
+        // Remplissage des champs
+        document.getElementById('doctorNamePrint').textContent = doctorName;
+        document.getElementById('doctorSignature').textContent = doctorName;
+        document.getElementById('doctorPhonePrint').textContent = doctorPhone ? 'Tél: ' + doctorPhone : '';
+        document.getElementById('patientNamePrint').textContent = patientName;
+        document.getElementById('patientPhonePrint').textContent = patientPhone;
+        
+        // Date du jour
+        const today = new Date();
+        document.getElementById('datePrint').textContent = today.toLocaleDateString('fr-FR');
+        
+        // Chargement des médicaments depuis le sessionStorage (car la table a été vidée)
+        try {
+            const medicationsData = sessionStorage.getItem('currentPrescriptionMedications');
+            const medications = medicationsData ? JSON.parse(medicationsData) : [];
+            
+            let html = '';
+            medications.forEach((med, idx) => {
+                // Nom et Dose sur la même ligne - un produit par ligne
+                html += `
+                    <div style="border-bottom: 1px dotted #ccc; margin-bottom: 15px; display: flex; justify-content: space-between; padding-bottom: 5px;">
+                        <span>${idx + 1}. <strong style="text-transform: uppercase;">${med.nom_produit || med.name}</strong></span>
+                        <span style="font-style: italic;">Dose: ${med.dose || med.dosage}</span>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('medicationsList').innerHTML = html || '<p>Aucun produit prescrit.</p>';
+        } catch (error) {
+            console.error('Erreur:', error);
+            document.getElementById('medicationsList').innerHTML = '<p>Erreur lors de la lecture des produits sauvegardés.</p>';
+        }
+    });
+
+    // Fonction pour terminer, tout oublier et rediriger
+    async function finishAndClear() {
+        if (confirm('⚠️ CONFIRMATION : L\'ordonnance sera enregistrée et les informations seront effacées du navigateur. Terminer ?')) {
+            try {
+                // 1. Sauvegarder l'ordonnance en base de données avant d'effacer
+                const patientNom = sessionStorage.getItem('patientNom') || 'Anonyme';
+                const patientPrenom = sessionStorage.getItem('patientPrenom') || '';
+                const patientSexe = sessionStorage.getItem('patientSexe') || 'N/A';
+                const patientPhone = sessionStorage.getItem('patientPhone') || 'N/A';
+                const doctorName = sessionStorage.getItem('doctorName') || 'Médecin';
+                const doctorPhone = sessionStorage.getItem('doctorPhone') || 'N/A';
+                const medsData = sessionStorage.getItem('currentPrescriptionMedications') || '[]';
+                const todayStr = new Date().toLocaleDateString('fr-FR');
+                
+                // On récupère la durée du traitement si elle existe en session
+                // Sinon on met 30 jours par défaut
+                const duree = parseInt(sessionStorage.getItem('duration')) || 30;
+
+                const prescriptionData = {
+                    nom_patient: patientNom,
+                    prenom_patient: patientPrenom,
+                    telephone_patient: patientPhone,
+                    sexe_patient: patientSexe,
+                    nom_docteur: doctorName,
+                    telephone_docteur: doctorPhone,
+                    medicaments: medsData,
+                    date_prescription: todayStr,
+                    duree_jours: duree
+                };
+
+                await fetch('/prescriptions/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(prescriptionData)
+                });
+
+                // 2. Vider tout le sessionStorage
+                sessionStorage.clear();
+                
+                // 3. Retour à l'accueil
+                alert('✅ Ordonnance enregistrée et dossier clôturé. Retour à l\'accueil.');
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Erreur lors de l\'enregistrement:', error);
+                alert('❌ Erreur lors de l\'enregistrement de l\'ordonnance. Les données n\'ont pas été effacées.');
+            }
+        }
+    }
+</script>
+{% endblock %}

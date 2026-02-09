@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Discussion - Hôpital Central{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h1 class="page-title">Discussion Patient-Docteur</h1>
+    
+    <div class="chat-columns">
+        <!-- SMS Column -->
+        <div class="compact-chat-container sms-container">
+            <div class="chat-header sms-header">
+                <div class="chat-header-title">💬 DISCUSSION PAR SMS</div>
+                <div class="chat-header-info">
+                    <div class="header-left">
+                        <span class="header-label">Patient</span>
+                        <span id="smsPatientName">Patient</span>
+                        <span id="smsPatientPhone" style="font-size: 11px; opacity: 0.9;"></span>
+                    </div>
+                    <div class="header-right">
+                        <span class="header-label">Docteur</span>
+                        <span id="smsDoctorName">Docteur</span>
+                        <span id="smsDoctorPhone" style="font-size: 11px; opacity: 0.9;"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="compact-chat-messages sms-messages" id="smsMessages">
+                <!-- SMS Messages will be displayed here -->
+            </div>
+            
+            <!-- Dual Input Zones for SMS -->
+            <div class="chat-dual-inputs">
+                <div class="input-zone">
+                    <span class="input-label">Zone Patient</span>
+                    <form id="smsPatientForm" class="compact-chat-form">
+                        <input type="text" id="smsPatientInput" placeholder="Réponse patient..." required>
+                        <button type="submit" class="btn-send btn-sms">➤</button>
+                    </form>
+                </div>
+                <div class="input-zone">
+                    <span class="input-label">Zone Docteur</span>
+                    <form id="smsDoctorForm" class="compact-chat-form">
+                        <input type="text" id="smsDoctorInput" placeholder="Réponse docteur..." required>
+                        <button type="submit" class="btn-send btn-sms">➤</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WhatsApp Column -->
+        <div class="compact-chat-container">
+            <div class="chat-header whatsapp-header">
+                <div class="chat-header-title">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span>📱 DISCUSSION PAR WHATSAPP</span>
+                        <div style="display: flex; gap: 15px; font-size: 14px;">
+                            <i class="fas fa-video" title="Appel Vidéo"></i>
+                            <i class="fas fa-phone" title="Appel Vocal"></i>
+                            <i class="fas fa-ellipsis-v" title="Plus d'options"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-header-info">
+                    <div class="header-left">
+                        <span class="header-label">Patient</span>
+                        <span id="waPatientName">Patient</span>
+                        <span id="waPatientPhone" style="font-size: 11px; opacity: 0.9;"></span>
+                    </div>
+                    <div class="header-right">
+                        <span class="header-label">Docteur</span>
+                        <span id="waDoctorName">Docteur</span>
+                        <span id="waDoctorPhone" style="font-size: 11px; opacity: 0.9;"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="compact-chat-messages" id="whatsappMessages">
+                <!-- WhatsApp Messages will be displayed here -->
+            </div>
+            
+            <!-- Dual Input Zones for WhatsApp -->
+            <div class="chat-dual-inputs">
+                <div class="input-zone">
+                    <span class="input-label">Zone Patient</span>
+                    <button type="button" id="btn-voice-whatsapp-patient" class="voice-record-btn" onclick="toggleVoice('whatsapp', 'patient')" style="background: #25D366;">
+                        <i class="fas fa-microphone"></i> <span class="btn-text">Parler</span> <span class="recording-timer" id="timer-whatsapp-patient" style="display:none;">0:00</span>
+                    </button>
+                    <form id="waPatientForm" class="compact-chat-form">
+                        <input type="text" id="waPatientInput" placeholder="Réponse patient..." required>
+                        <button type="submit" class="btn-send btn-whatsapp">➤</button>
+                    </form>
+                </div>
+                <div class="input-zone">
+                    <span class="input-label">Zone Docteur</span>
+                    <button type="button" id="btn-voice-whatsapp-doctor" class="voice-record-btn" onclick="toggleVoice('whatsapp', 'doctor')" style="background: #25D366;">
+                        <i class="fas fa-microphone"></i> <span class="btn-text">Parler</span> <span class="recording-timer" id="timer-whatsapp-doctor" style="display:none;">0:00</span>
+                    </button>
+                    <form id="waDoctorForm" class="compact-chat-form">
+                        <input type="text" id="waDoctorInput" placeholder="Réponse docteur..." required>
+                        <button type="submit" class="btn-send btn-whatsapp">➤</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let smsMessages = [];
+    let whatsappMessages = [];
+    let recordingStates = {};
+    let mediaRecorders = {};
+    let audioChunks = {};
+    let audioUrls = {}; // Store real audio URLs
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        populateHeaders();
+        loadInitialMessages();
+    });
+    
+    function populateHeaders() {
+        const patientName = sessionStorage.getItem('patientName') || 'Patient';
+        const patientPhone = sessionStorage.getItem('patientPhone') || '';
+        const doctorName = sessionStorage.getItem('doctorName') || 'Docteur';
+        const doctorPhone = sessionStorage.getItem('doctorPhone') || '';
+        
+        // SMS Header
+        document.getElementById('smsPatientName').textContent = patientName;
+        document.getElementById('smsPatientPhone').textContent = patientPhone ? 'Tél: ' + patientPhone : '';
+        document.getElementById('smsDoctorName').textContent = 'Dr. ' + doctorName;
+        document.getElementById('smsDoctorPhone').textContent = doctorPhone ? 'Tél: ' + doctorPhone : '';
+        
+        // WA Header
+        document.getElementById('waPatientName').textContent = patientName;
+        document.getElementById('waPatientPhone').textContent = patientPhone ? 'Tél: ' + patientPhone : '';
+        document.getElementById('waDoctorName').textContent = 'Dr. ' + doctorName;
+        document.getElementById('waDoctorPhone').textContent = doctorPhone ? 'Tél: ' + doctorPhone : '';
+    }
+    
+    // --- FORMS ---
+    const setupForm = (id, type, role) => {
+        const form = document.getElementById(id);
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = e.target.querySelector('input');
+                addMessage(type, role, input.value);
+                input.value = '';
+            });
+        }
+    };
+    setupForm('smsPatientForm', 'sms', 'patient');
+    setupForm('smsDoctorForm', 'sms', 'doctor');
+    setupForm('waPatientForm', 'whatsapp', 'patient');
+    setupForm('waDoctorForm', 'whatsapp', 'doctor');
+
+    // --- REAL AUDIO RECORDING LOGIC ---
+    async function toggleVoice(type, role) {
+        const key = `${type}-${role}`;
+        const btnId = `btn-voice-${type}-${role}`;
+        const timerId = `timer-${type}-${role}`;
+        const btn = document.getElementById(btnId);
+        const timerEl = document.getElementById(timerId);
+        const btnText = btn.querySelector('.btn-text');
+
+        if (!recordingStates[key]) {
+            try {
+                // Request microphone access
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                mediaRecorders[key] = mediaRecorder;
+                audioChunks[key] = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks[key].push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks[key], { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const msgId = `audio-${Date.now()}`;
+                    audioUrls[msgId] = audioUrl;
+
+                    const durationSec = Math.floor((Date.now() - recordingStates[key].startTime) / 1000);
+                    const durationStr = `${Math.floor(durationSec / 60)}:${(durationSec % 60).toString().padStart(2, '0')}`;
+                    
+                    addMessage(type, role, `[VOICE_MESSAGE]`, durationStr, msgId);
+                    
+                    // Cleanup
+                    clearInterval(recordingStates[key].interval);
+                    delete recordingStates[key];
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                // START RECORDING
+                mediaRecorder.start();
+                recordingStates[key] = {
+                    startTime: Date.now(),
+                    interval: setInterval(() => updateTimer(key, timerEl), 1000)
+                };
+                
+                btn.classList.add('recording');
+                btnText.textContent = 'Arrêter & Envoyer';
+                timerEl.style.display = 'inline';
+                timerEl.textContent = '0:00';
+
+            } catch (err) {
+                console.error("Erreur micro:", err);
+                alert("Impossible d'accéder au micro. Veuillez autoriser l'accès.");
+            }
+        } else {
+            // STOP RECORDING
+            mediaRecorders[key].stop();
+            btn.classList.remove('recording');
+            btnText.textContent = 'Parler';
+            timerEl.style.display = 'none';
+        }
+    }
+
+    function updateTimer(key, el) {
+        if (!recordingStates[key]) return;
+        const diff = Math.floor((Date.now() - recordingStates[key].startTime) / 1000);
+        const m = Math.floor(diff / 60);
+        const s = (diff % 60).toString().padStart(2, '0');
+        el.textContent = `${m}:${s}`;
+    }
+    
+    function addMessage(type, role, text, duration = '0:05', audioId = null) {
+        const senderName = role === 'patient' 
+            ? (sessionStorage.getItem('patientName') || 'Patient')
+            : ('Dr. ' + (sessionStorage.getItem('doctorName') || 'Docteur'));
+            
+        const msg = {
+            role,
+            sender: senderName,
+            text,
+            duration,
+            audioId,
+            timestamp: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})
+        };
+        
+        const list = type === 'sms' ? smsMessages : whatsappMessages;
+        list.push(msg);
+        displayMessages(type === 'sms' ? 'smsMessages' : 'whatsappMessages', list, type);
+    }
+    
+    function playAudio(audioId) {
+        const url = audioUrls[audioId];
+        if (url) {
+            const audio = new Audio(url);
+            audio.play();
+        } else {
+            alert("Audio introuvable.");
+        }
+    }
+
+    function loadInitialMessages() {
+        addMessage('sms', 'doctor', 'Bonjour, je suis votre médecin pour le suivi SMS.');
+        addMessage('whatsapp', 'doctor', 'Bonjour, je suis votre médecin pour le suivi WhatsApp.');
+    }
+    
+    function displayMessages(containerId, messagesList, type) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = messagesList.map(msg => {
+            const isPatient = msg.role === 'patient';
+            const bubbleClass = isPatient ? 'bubble-patient' : 'bubble-doctor';
+            let typeExtra = type === 'sms' ? (isPatient ? 'sms-bubble-patient' : 'sms-bubble-doctor') : '';
+
+            let messageBody = `<div class="bubble-text">${msg.text}</div>`;
+            if (msg.text === '[VOICE_MESSAGE]') {
+                messageBody = `
+                    <div class="voice-msg-content">
+                        <i class="fas fa-play voice-play-icon" onclick="playAudio('${msg.audioId}')"></i>
+                        <div class="voice-waveform">
+                            ${[...Array(15)].map(() => `<div class="wave-bar" style="height: ${Math.floor(Math.random()*25 + 5)}px;"></div>`).join('')}
+                        </div>
+                        <span style="font-size: 11px; font-weight: 700;">${msg.duration || '0:05'}</span>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="chat-bubble ${bubbleClass} ${typeExtra}">
+                    <span class="bubble-sender">${msg.sender}</span>
+                    ${messageBody}
+                    <span class="bubble-time">${msg.timestamp}</span>
+                </div>
+            `;
+        }).join('');
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}WhatsApp - Hôpital Central{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h1 class="page-title">💬 Générer Rappel WhatsApp</h1>
+    
+    <div class="form-container">
+        <form id="whatsappForm" class="form">
+            <div class="form-group">
+                <label for="patientName">Nom du Patient</label>
+                <input type="text" id="patientName" name="patientName" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="patientPhone">Téléphone</label>
+                <input type="tel" id="patientPhone" name="patientPhone" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="doctorName">Docteur</label>
+                <input type="text" id="doctorName" name="doctorName" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="heureMatin">Heure Rappel Matin *</label>
+                <input type="time" id="heureMatin" name="heureMatin" value="08:00" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="heureSoir">Heure Rappel Soir *</label>
+                <input type="time" id="heureSoir" name="heureSoir" value="20:00" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="validity">Validité du Rappel (Jours) *</label>
+                <select id="validity" name="validity" required>
+                    <option value="">-- Sélectionner --</option>
+                    {% for i in range(1, 51) %}
+                    <option value="{{ i }}" {% if i == 7 %}selected{% endif %}>{{ i }} jours</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="message">Message WhatsApp</label>
+                <textarea id="message" name="message" rows="8" readonly></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">📤 Envoyer WhatsApp</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/medications'">↩ Retour</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const patientName = sessionStorage.getItem('patientName') || 'Patient';
+        const patientPhone = sessionStorage.getItem('patientPhone') || '';
+        const doctorName = sessionStorage.getItem('doctorName') || 'Docteur';
+        
+        document.getElementById('patientName').value = patientName;
+        document.getElementById('patientPhone').value = patientPhone;
+        document.getElementById('doctorName').value = doctorName;
+        
+        // Generate personalized message
+        const message = `Juste un petit message pour vous rappeler avec bienveillance votre prise de médicament du jour.
+
+Votre santé compte énormément, et chaque petite routine fait la différence ✨
+
+Si vous l'avez déjà pris, parfait ! Sinon, c'est le bon moment de vous en occuper tranquillement.
+
+D'après votre Dr ${doctorName}`;
+        
+        document.getElementById('message').value = message;
+    });
+    
+    document.getElementById('whatsappForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const morning = document.getElementById('heureMatin').value;
+        const evening = document.getElementById('heureSoir').value;
+        const duration = document.getElementById('validity').value;
+        
+        // Save to sessionStorage for prescription print
+        sessionStorage.setItem('morningTime', morning);
+        sessionStorage.setItem('eveningTime', evening);
+        sessionStorage.setItem('duration', duration);
+        sessionStorage.setItem('channel', 'WhatsApp');
+        
+        const formData = {
+            nom_patient: sessionStorage.getItem('patientNom') || '',
+            prenom_patient: sessionStorage.getItem('patientPrenom') || '',
+            telephone_patient: document.getElementById('patientPhone').value,
+            medicaments: document.getElementById('message').value,
+            date_debut: new Date().toISOString().split('T')[0],
+            duree: parseInt(duration),
+            matin: morning,
+            soir: evening,
+            type_canal: 'WhatsApp'
+        };
+        
+        try {
+            // 1. Fetch current medications to save them for the prescription page
+            const medResponse = await fetch('/medications/');
+            const medications = await medResponse.json();
+            sessionStorage.setItem('currentPrescriptionMedications', JSON.stringify(medications));
+
+            // 2. Send the reminder
+            const response = await fetch('/reminders/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            });
+            
+            if (response.ok) {
+                // 3. Clear the medications table in the database immediately
+                await fetch('/medications/', { method: 'DELETE' });
+                
+                alert('✅ WhatsApp programmé avec succès ! Redirection vers l\'ordonnance...');
+                window.location.href = '/prescription';
+            } else {
+                alert('❌ Erreur lors de l\'envoi');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Erreur de connexion');
+        }
+    });
+</script>
+{% endblock %}
