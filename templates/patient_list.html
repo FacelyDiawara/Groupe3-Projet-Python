@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Liste de Nos Patients - Hôpital Central{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h1 class="page-title">👥 Liste de Nos Patients (Ordonnances Actives)</h1>
+    
+    <div class="table-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Suivi des Traitements en Cours</h2>
+            <div style="font-size: 14px; color: var(--text-secondary);">
+                <span id="activeCount">0</span> ordonnance(s) active(s)
+            </div>
+        </div>
+        
+        <table id="patientsListTable" class="data-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Sexe</th>
+                    <th>Tél. Patient</th>
+                    <th>Docteur</th>
+                    <th>Tél. Docteur</th>
+                    <th>Jours Restants</th>
+                    <th style="width: 100px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Populated by JavaScript -->
+            </tbody>
+        </table>
+        <div id="noDataMessage" style="display: none; text-align: center; padding: 40px; color: var(--text-secondary);">
+            <i class="fas fa-file-medical-alt" style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
+            <p>Aucune ordonnance active trouvée.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPrescriptions();
+    });
+
+    async function loadPrescriptions() {
+        try {
+            const response = await fetch('/prescriptions/');
+            const prescriptions = await response.json();
+            
+            const tbody = document.querySelector('#patientsListTable tbody');
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            let activeCount = 0;
+            
+            const rows = prescriptions.map(p => {
+                const dateParts = p.date_prescription.split('/');
+                const prescDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                
+                const expiryDate = new Date(prescDate);
+                expiryDate.setDate(prescDate.getDate() + p.duree_jours);
+                
+                const isExpired = today >= expiryDate;
+                
+                // On n'affiche que les ordonnances NON expirées selon la demande
+                if (isExpired) return null;
+                
+                activeCount++;
+                
+                const diffTime = expiryDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                let daysHtml = '';
+                if (diffDays <= 2) {
+                    daysHtml = `<span style="color: var(--danger-color); font-weight: bold;">${diffDays} jour(s)</span>`;
+                } else {
+                    daysHtml = `<span style="color: var(--success-color); font-weight: bold;">${diffDays} jour(s)</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td><strong>${p.nom_patient} ${p.prenom_patient}</strong></td>
+                        <td>${p.sexe_patient || 'N/A'}</td>
+                        <td>${p.telephone_patient || 'N/A'}</td>
+                        <td>Dr. ${p.nom_docteur}</td>
+                        <td>${p.telephone_docteur || 'N/A'}</td>
+                        <td>${daysHtml}</td>
+                        <td>
+                            <button class="btn btn-small btn-primary" onclick="contactPatient('${p.nom_patient} ${p.prenom_patient}')">💬 Chat</button>
+                        </td>
+                    </tr>
+                `;
+            }).filter(row => row !== null);
+
+            tbody.innerHTML = rows.join('');
+            document.getElementById('activeCount').textContent = activeCount;
+            
+            if (activeCount === 0) {
+                document.getElementById('noDataMessage').style.display = 'block';
+                document.getElementById('patientsListTable').style.display = 'none';
+            }
+            
+        } catch (error) {
+            console.error('Error loading prescriptions:', error);
+            document.getElementById('noDataMessage').innerHTML = '<p style="color: var(--danger-color);">Erreur lors du chargement des données des patients.</p>';
+            document.getElementById('noDataMessage').style.display = 'block';
+        }
+    }
+
+    function contactPatient(name) {
+        // Redirection vers le chat (pourrait être amélioré pour charger le patient en session)
+        window.location.href = '/chat';
+    }
+</script>
+{% endblock %}

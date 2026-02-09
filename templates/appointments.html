@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Patients - Hôpital Central{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h1 class="page-title">📋 Gestion des Patients</h1>
+    
+    <!-- Action Buttons -->
+    <div class="action-buttons-bar">
+        <button class="btn btn-danger" onclick="deleteSelectedPatient()" id="deleteBtn">🗑 SUPPRIMER</button>
+        <button class="btn btn-primary" onclick="navigateToDoctors()">👨‍⚕️ Choisir un Docteur</button>
+    </div>
+    
+    <!-- Two Column Layout -->
+    <div class="two-column-layout">
+        <!-- Left: Form -->
+        <div class="left-column">
+            <div class="compact-form-container">
+                <h2>Informations du Patient</h2>
+                <form id="patientForm" class="form">
+                    <div class="form-group">
+                        <label for="patientNom">Nom *</label>
+                        <input type="text" id="patientNom" name="patientNom" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientPrenom">Prénom *</label>
+                        <input type="text" id="patientPrenom" name="patientPrenom" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientSexe">Sexe *</label>
+                        <select id="patientSexe" name="patientSexe" required>
+                            <option value="">-- Sélectionner --</option>
+                            <option value="Masculin">Masculin</option>
+                            <option value="Féminin">Féminin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientPhone">Téléphone *</label>
+                        <input type="tel" id="patientPhone" name="patientPhone" placeholder="+221XXXXXXXXX" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientDate">Date *</label>
+                        <input type="date" id="patientDate" name="patientDate" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">✓ Enregistrer</button>
+                        <button type="reset" class="btn btn-secondary">↺ Réinitialiser</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Right: Table -->
+        <div class="right-column">
+            <div class="compact-table-container">
+                <h2>Liste des Patients</h2>
+                <table id="patientsTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="radio" disabled style="opacity: 0.3;">
+                            </th>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Sexe</th>
+                            <th>Téléphone</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let selectedPatientId = null;
+    let patients = [];
+    
+    // Set today's date as default
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('patientDate').value = today;
+        loadPatients();
+    });
+    
+    // Handle form submission
+    document.getElementById('patientForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = {
+            nom_patient: document.getElementById('patientNom').value,
+            prenom_patient: document.getElementById('patientPrenom').value,
+            sexe_patient: document.getElementById('patientSexe').value,
+            telephone_patient: document.getElementById('patientPhone').value,
+            date: document.getElementById('patientDate').value,
+            docteur_name: "Non assigné",
+            heure: "00:00"
+        };
+        
+        try {
+            const response = await fetch('/appointments/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            });
+            
+            if (response.ok) {
+                alert('✅ Patient enregistré avec succès !');
+                e.target.reset();
+                // Reset date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('patientDate').value = today;
+                loadPatients();
+            } else {
+                alert('❌ Erreur lors de l\'enregistrement');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Erreur de connexion');
+        }
+    });
+    
+    // Load patients from database
+    async function loadPatients() {
+        try {
+            const response = await fetch('/appointments/');
+            patients = await response.json();
+            
+            const tbody = document.querySelector('#patientsTable tbody');
+            tbody.innerHTML = patients.map(patient => `
+                <tr onclick="selectPatient(${patient.id})" style="cursor: pointer;" id="row-${patient.id}">
+                    <td>
+                        <input type="radio" name="selectedPatient" value="${patient.id}" onchange="selectPatient(${patient.id})">
+                    </td>
+                    <td>${patient.nom_patient || '-'}</td>
+                    <td>${patient.prenom_patient || '-'}</td>
+                    <td>${patient.sexe_patient || '-'}</td>
+                    <td>${patient.telephone_patient || '-'}</td>
+                    <td>${patient.date || '-'}</td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading patients:', error);
+        }
+    }
+    
+    // Select patient
+    function selectPatient(id) {
+        selectedPatientId = id;
+        const patient = patients.find(p => p.id === id);
+        
+        // Update radio button
+        document.querySelector(`input[value="${id}"]`).checked = true;
+        
+        // Highlight selected row
+        document.querySelectorAll('#patientsTable tbody tr').forEach(row => {
+            row.style.backgroundColor = '';
+        });
+        document.getElementById(`row-${id}`).style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+        
+        // Save patient info to sessionStorage
+        if (patient) {
+            sessionStorage.setItem('patientNom', patient.nom_patient || '');
+            sessionStorage.setItem('patientPrenom', patient.prenom_patient || '');
+            sessionStorage.setItem('patientSexe', patient.sexe_patient || '');
+            sessionStorage.setItem('patientPhone', patient.telephone_patient || '');
+            sessionStorage.setItem('patientName', `${patient.nom_patient} ${patient.prenom_patient}`);
+        }
+    }
+    
+    // Delete selected patient
+    async function deleteSelectedPatient() {
+        if (!selectedPatientId) {
+            alert('⚠️ Veuillez sélectionner un patient à supprimer');
+            return;
+        }
+        
+        const patient = patients.find(p => p.id === selectedPatientId);
+        if (!patient) return;
+        
+        const confirmation = confirm(`⚠️ CONFIRMATION DE SUPPRESSION\n\nÊtes-vous sûr de vouloir supprimer le patient :\n${patient.nom_patient} ${patient.prenom_patient} ?\n\nCette action est irréversible.\n\nCliquez sur OK pour confirmer (OUI)\nCliquez sur Annuler pour annuler (NON)`);
+        
+        if (confirmation) {
+            try {
+                const response = await fetch(`/appointments/${selectedPatientId}`, {method: 'DELETE'});
+                if (response.ok) {
+                    alert('✅ Patient supprimé avec succès !');
+                    selectedPatientId = null;
+                    loadPatients();
+                } else {
+                    alert('❌ Erreur lors de la suppression');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Erreur de connexion');
+            }
+        }
+    }
+    
+    // Navigate to doctors page
+    function navigateToDoctors() {
+        if (!selectedPatientId) {
+            alert('⚠️ Veuillez d\'abord sélectionner un patient dans la liste');
+            return;
+        }
+        window.location.href = '/users';
+    }
+</script>
+{% endblock %}

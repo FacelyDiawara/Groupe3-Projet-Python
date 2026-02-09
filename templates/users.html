@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}Utilisateur - Hôpital Central{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <h1 class="page-title">👤 Gestion des Utilisateurs</h1>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('list')">LISTE DES DOCTEURS</button>
+            <button class="tab-btn" onclick="switchTab('add')">AJOUTEZ UN DOCTEUR</button>
+        </div>
+        
+        <!-- Tab Content: Liste des Docteurs -->
+        <div id="listTab" class="tab-content active">
+            <!-- Patient Indicator -->
+            <div id="patientSelectionIndicator" style="background: white; padding: 10px 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #8b5cf6; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <div>
+                    <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; display: block;">Patient Actuel</span>
+                    <span id="displayPatientName" style="font-size: 16px; font-weight: 700; color: #1e293b;">Aucun patient sélectionné</span>
+                </div>
+                <button class="btn btn-small" onclick="window.location.href='/appointments'" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">Changer</button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons-bar">
+                <button class="btn btn-success" onclick="validatePrescription()">📋 Valider une Ordonnance</button>
+                <button class="btn btn-primary" onclick="modifySelectedDoctor()" id="modifyBtn">✏️ MODIFIER</button>
+                <button class="btn btn-info" onclick="goToChat()" style="background-color: #8b5cf6; color: white;">📅 PRENDRE RENDEZ-VOUS</button>
+                <button class="btn btn-danger" onclick="deleteSelectedDoctor()" id="deleteBtn">🗑 SUPPRIMER</button>
+            </div>
+            
+            <!-- Two Column Layout -->
+            <div class="two-column-layout">
+                <!-- Left: Table -->
+                <div class="left-column">
+                    <div class="compact-table-container">
+                        <h2>Liste des Docteurs</h2>
+                        <table id="doctorsTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="radio" disabled style="opacity: 0.3;">
+                                    </th>
+                                    <th>Nom</th>
+                                    <th>Prénoms</th>
+                                    <th>Spécialité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Right: Details -->
+                <div class="right-column">
+                    <div class="compact-form-container">
+                        <h2>Détails du Docteur</h2>
+                        <div id="doctorDetails" style="color: var(--text-secondary); font-size: 14px;">
+                            <p style="text-align: center; padding: 40px 20px;">
+                                Sélectionnez un docteur dans la liste pour voir ses détails
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Content: Ajouter un Docteur -->
+        <div id="addTab" class="tab-content">
+            <div class="wide-form-container">
+                <h2 style="margin-bottom: 30px; color: var(--text-primary);" id="formTitle">Ajouter un Nouveau Docteur</h2>
+                <form id="doctorForm" class="form">
+                    <div class="form-group">
+                        <label for="doctorNom">Nom *</label>
+                        <input type="text" id="doctorNom" name="doctorNom" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doctorPrenom">Prénoms *</label>
+                        <input type="text" id="doctorPrenom" name="doctorPrenom" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="specialty">Spécialité *</label>
+                        <input type="text" id="specialty" name="specialty" placeholder="Ex: Cardiologue" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doctorPhone">Téléphone *</label>
+                        <input type="tel" id="doctorPhone" name="doctorPhone" placeholder="+221XXXXXXXXX" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doctorEmail">Email *</label>
+                        <input type="email" id="doctorEmail" name="doctorEmail" placeholder="docteur@hopital.sn" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">✓ Enregistrer</button>
+                        <button type="reset" class="btn btn-secondary" onclick="cancelEdit()">↺ Annuler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let editingDoctorId = null;
+    let selectedDoctorId = null;
+    let doctors = [];
+    
+    // Tab switching function
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        if (tabName === 'list') {
+            document.getElementById('listTab').classList.add('active');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        } else if (tabName === 'add') {
+            document.getElementById('addTab').classList.add('active');
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDoctors();
+        displayCurrentPatient();
+    });
+
+    function displayCurrentPatient() {
+        const patientName = sessionStorage.getItem('patientName');
+        const displayEl = document.getElementById('displayPatientName');
+        if (patientName) {
+            displayEl.textContent = patientName;
+            displayEl.style.color = '#8b5cf6';
+        } else {
+            displayEl.textContent = "Aucun patient sélectionné";
+            displayEl.style.color = '#ef4444';
+        }
+    }
+    
+    // Form submission (Add or Update)
+    document.getElementById('doctorForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = {
+            nom: document.getElementById('doctorNom').value,
+            prenom: document.getElementById('doctorPrenom').value,
+            specialite: document.getElementById('specialty').value,
+            telephone: document.getElementById('doctorPhone').value,
+            email: document.getElementById('doctorEmail').value,
+            role: "Docteur"
+        };
+        
+        try {
+            let response;
+            if (editingDoctorId) {
+                response = await fetch(`/doctors/${editingDoctorId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    alert('✅ Docteur modifié avec succès !');
+                    cancelEdit();
+                    loadDoctors();
+                    switchTab('list');
+                } else {
+                    alert('❌ Erreur lors de la modification');
+                }
+            } else {
+                response = await fetch('/doctors/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    alert('✅ Docteur ajouté avec succès !');
+                    e.target.reset();
+                    loadDoctors();
+                    switchTab('list');
+                } else {
+                    alert('❌ Erreur lors de l\'ajout');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Erreur de connexion');
+        }
+    });
+    
+    // Load doctors from database
+    async function loadDoctors() {
+        try {
+            const response = await fetch('/doctors/');
+            doctors = await response.json();
+            
+            const tbody = document.querySelector('#doctorsTable tbody');
+            tbody.innerHTML = doctors.map(doc => `
+                <tr onclick="selectDoctor(${doc.id})" style="cursor: pointer;" id="row-${doc.id}">
+                    <td>
+                        <input type="radio" name="selectedDoctor" value="${doc.id}" onchange="selectDoctor(${doc.id})">
+                    </td>
+                    <td>${doc.nom || '-'}</td>
+                    <td>${doc.prenom || '-'}</td>
+                    <td>${doc.specialite || '-'}</td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading doctors:', error);
+        }
+    }
+    
+    // Select doctor
+    function selectDoctor(id) {
+        selectedDoctorId = id;
+        const doctor = doctors.find(d => d.id === id);
+        
+        // Update radio button
+        document.querySelector(`input[value="${id}"]`).checked = true;
+        
+        // Highlight selected row
+        document.querySelectorAll('#doctorsTable tbody tr').forEach(row => {
+            row.style.backgroundColor = '';
+        });
+        document.getElementById(`row-${id}`).style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+        
+        // Show details
+        if (doctor) {
+            document.getElementById('doctorDetails').innerHTML = `
+                <div style="line-height: 2;">
+                    <p><strong>Nom :</strong> ${doctor.nom || '-'}</p>
+                    <p><strong>Prénoms :</strong> ${doctor.prenom || '-'}</p>
+                    <p><strong>Spécialité :</strong> ${doctor.specialite || '-'}</p>
+                    <p><strong>Téléphone :</strong> ${doctor.telephone || '-'}</p>
+                    <p><strong>Email :</strong> ${doctor.email || '-'}</p>
+                </div>
+            `;
+            
+            // Save doctor info to sessionStorage
+            sessionStorage.setItem('doctorNom', doctor.nom || '');
+            sessionStorage.setItem('doctorPrenom', doctor.prenom || '');
+            sessionStorage.setItem('doctorPhone', doctor.telephone || '');
+            sessionStorage.setItem('doctorName', `${doctor.nom} ${doctor.prenom}`);
+        }
+    }
+    
+    // Modify selected doctor
+    function modifySelectedDoctor() {
+        if (!selectedDoctorId) {
+            alert('⚠️ Veuillez sélectionner un docteur à modifier');
+            return;
+        }
+        
+        const doctor = doctors.find(d => d.id === selectedDoctorId);
+        if (doctor) {
+            editingDoctorId = selectedDoctorId;
+            
+            document.getElementById('doctorNom').value = doctor.nom;
+            document.getElementById('doctorPrenom').value = doctor.prenom;
+            document.getElementById('specialty').value = doctor.specialite;
+            document.getElementById('doctorPhone').value = doctor.telephone;
+            document.getElementById('doctorEmail').value = doctor.email;
+            
+            document.getElementById('formTitle').textContent = `Modifier: ${doctor.nom} ${doctor.prenom}`;
+            switchTab('add');
+        }
+    }
+    
+    // Delete selected doctor
+    async function deleteSelectedDoctor() {
+        if (!selectedDoctorId) {
+            alert('⚠️ Veuillez sélectionner un docteur à supprimer');
+            return;
+        }
+        
+        const doctor = doctors.find(d => d.id === selectedDoctorId);
+        if (!doctor) return;
+        
+        const confirmation = confirm(`⚠️ CONFIRMATION DE SUPPRESSION\n\nÊtes-vous sûr de vouloir supprimer le docteur :\n${doctor.nom} ${doctor.prenom} ?\n\nCette action est irréversible.\n\nCliquez sur OK pour confirmer (OUI)\nCliquez sur Annuler pour annuler (NON)`);
+        
+        if (confirmation) {
+            try {
+                const response = await fetch(`/doctors/${selectedDoctorId}`, {method: 'DELETE'});
+                if (response.ok) {
+                    alert('✅ Docteur supprimé avec succès !');
+                    selectedDoctorId = null;
+                    document.getElementById('doctorDetails').innerHTML = '<p style="text-align: center; padding: 40px 20px;">Sélectionnez un docteur dans la liste pour voir ses détails</p>';
+                    loadDoctors();
+                } else {
+                    alert('❌ Erreur lors de la suppression');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Erreur de connexion');
+            }
+        }
+    }
+    
+    // Validate prescription - navigate to medications
+    function validatePrescription() {
+        window.location.href = '/medications';
+    }
+    
+    // Go to discussion page
+    function goToChat() {
+        if (!sessionStorage.getItem('patientName')) {
+            alert('⚠️ Veuillez d\'abord sélectionner un patient sur la page Enregistrer un Patient');
+            window.location.href = '/appointments';
+            return;
+        }
+        if (!selectedDoctorId) {
+            alert('⚠️ Veuillez sélectionner un docteur dans la liste');
+            return;
+        }
+        window.location.href = '/chat';
+    }
+    
+    // Cancel edit
+    function cancelEdit() {
+        editingDoctorId = null;
+        document.getElementById('formTitle').textContent = 'Ajouter un Nouveau Docteur';
+        document.getElementById('doctorForm').reset();
+    }
+</script>
+{% endblock %}
