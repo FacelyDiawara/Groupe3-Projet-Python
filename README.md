@@ -15,6 +15,25 @@ KOUROUMA SOLO
    ```bash
    git clone https://github.com/FacelyDiawara/Groupe3-Projet-Python.git
    cd Projet
+
+   . **Créer un environnement virtuel**
+
+   ```bash
+   python -m venv .venv
+   ```
+
+3. **Activer l'environnement virtuel**
+   - Windows :
+     ```bash
+     .venv\Scripts\activate
+     ```
+   - Linux/Mac :
+     ```bash
+     source .venv/bin/activate
+     ```
+
+4. **Installer les dépendances**
+  
    ```
 2. **Dépendances**
 3. Installation des dépendances ou bibliothèques pour l'exécution du projet
