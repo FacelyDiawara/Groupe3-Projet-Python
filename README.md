@@ -98,5 +98,5 @@ hopital-central/
 
 ## 📧 Contact
 
-- **Développeur & Admin** : Facely Diawara
-- **Email** : contact@hopitalcentral.sn
+- **Développeur & Admin** : Facely Diawara, Hassanatou Diallo, Nene Aissatou Diallo et Solo Kourouma
+- **Email** : lelemandou626@gmail.com  pour plus de questions
