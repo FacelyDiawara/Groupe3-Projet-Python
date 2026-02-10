@@ -4,39 +4,9 @@ Une application web complète de gestion hospitalière avec système de rappel a
 
 ## 🌐 Utiliser l'Application
 
-**Accès direct en ligne** : http://127.0.0.1:8000 dans votre navigateur
-Cliquez sur le lien et commencez à utiliser l'application. **Aucune installation requise !**
-
----
-
-## 📂 Code Source
-
-Le code source est disponible sur ce repository pour consultation, étude et contribution.
-
-### Technologies Utilisées
-
-- **Backend** : Python (FastAPI, SQLAlchemy)
-- **Frontend** : Jinja2 Templates, HTML5, CSS3, JavaScript
-- **Base de données** : SQLite
-- **Messagerie** : Twilio (SMS/WhatsApp)
-- **Génération PDF** : ReportLab
-
----
-
-## ✨ Fonctionnalités
-
-- ✅ **Gestion des Patients** : Enregistrement et suivi des patients
-- ✅ **Gestion des Docteurs** : Base de données des médecins disponibles
-- ✅ **Rendez-vous** : Planification et gestion des rendez-vous
-- ✅ **Prescriptions** : Gestion des médicaments et prescriptions
-- ✅ **Rappels Automatiques** : Envoi de SMS et WhatsApp aux patients
-- ✅ **Discussion** : Interface de chat patient-docteur
-- ✅ **Interface Moderne** : Design responsive et professionnel
-
----
+**Accès direct en ligne** : http://127.0.0.1:8000 dans votre navigateur après avoir cloné et les respect des étapes ci_dessous 
 
 ## 🚀 Installation Locale (Pour Développeurs)
-
 Si vous souhaitez exécuter l'application localement pour le développement :
 
 ### Prérequis
@@ -49,7 +19,7 @@ Si vous souhaitez exécuter l'application localement pour le développement :
 1. **Cloner le repository**
 
    ```bash
-   git clone https://github.com/FacelyDiawara:Groupe3-Projet-Python.git
+   git clone https://github.com/FacelyDiawara/Groupe3-Projet-Python.git
    cd hopital-central
    ```
 
@@ -81,7 +51,33 @@ Si vous souhaitez exécuter l'application localement pour le développement :
    ```
 
 L'application s'ouvrira automatiquement dans votre navigateur à l'adresse `http://127.0.0.1:8000`
+Cliquez sur le lien et commencez à utiliser l'application. **Aucune installation requise !**
 
+---
+
+## 📂 Code Source
+
+Le code source est disponible sur ce repository pour consultation, étude et contribution.
+
+### Technologies Utilisées
+
+- **Backend** : Python (FastAPI, SQLAlchemy)
+- **Frontend** : Jinja2 Templates, HTML5, CSS3, JavaScript
+- **Base de données** : SQLite
+- **Messagerie** : Twilio (SMS/WhatsApp)
+- **Génération PDF** : ReportLab
+
+---
+
+## ✨ Fonctionnalités
+
+- ✅ **Gestion des Patients** : Enregistrement et suivi des patients
+- ✅ **Gestion des Docteurs** : Base de données des médecins disponibles
+- ✅ **Rendez-vous** : Planification et gestion des rendez-vous
+- ✅ **Prescriptions** : Gestion des médicaments et prescriptions
+- ✅ **Rappels Automatiques** : Envoi de SMS et WhatsApp aux patients
+- ✅ **Discussion** : Interface de chat patient-docteur
+- ✅ **Interface Moderne** : Design responsive et professionnel
 ---
 
 ## 📁 Structure du Projet
