@@ -1,154 +1,76 @@
-# 🏥 Hôpital Central - Système de Gestion Hospitalière
+# Hôpital Central - Système de Gestion Hospitalière
 
-Une application web complète de gestion hospitalière avec système de rappel automatique pour les patients.
-
-## 🌐 Utiliser l'Application
-
-**Accès direct en ligne** : [https://hopital-central.onrender.com](https://hopital-central.onrender.com)
-
-Cliquez sur le lien et commencez à utiliser l'application. **Aucune installation requise !**
+Une application web moderne pour la gestion des services hospitaliers, incluant la gestion des patients, des docteurs, des prescriptions et des rappels automatisés.
 
 ---
 
-## 📂 Code Source
+## 💻 Installation Rapide
 
-Le code source est disponible sur ce repository pour consultation, étude et contribution.
-
-### Technologies Utilisées
-
-- **Backend** : Python (FastAPI, SQLAlchemy)
-- **Frontend** : Jinja2 Templates, HTML5, CSS3, JavaScript
-- **Base de données** : SQLite
-- **Messagerie** : Twilio (SMS/WhatsApp)
-- **Génération PDF** : ReportLab
-
----
-
-## ✨ Fonctionnalités
-
-- ✅ **Gestion des Patients** : Enregistrement et suivi des patients
-- ✅ **Gestion des Docteurs** : Base de données des médecins disponibles
-- ✅ **Rendez-vous** : Planification et gestion des rendez-vous
-- ✅ **Prescriptions** : Gestion des médicaments et prescriptions
-- ✅ **Rappels Automatiques** : Envoi de SMS et WhatsApp aux patients
-- ✅ **Discussion** : Interface de chat patient-docteur
-- ✅ **Interface Moderne** : Design responsive et professionnel
-
----
-
-## 🚀 Installation Locale (Pour Développeurs)
-
-Si vous souhaitez exécuter l'application localement pour le développement :
-
-### Prérequis
-
-- Python 3.8 ou supérieur
-- pip (gestionnaire de paquets Python)
-
-### Étapes
-
-1. **Cloner le repository**
-
+1. **Cloner le projet**
    ```bash
-   git clone https://github.com/votre-username/hopital-central.git
-   cd hopital-central
+   git clone https://github.com/FacelyDiawara/Groupe3-Projet-Python.git
+   cd Projet
    ```
-
-2. **Créer un environnement virtuel**
-
-   ```bash
-   python -m venv .venv
-   ```
-
-3. **Activer l'environnement virtuel**
-   - Windows :
-     ```bash
-     .venv\Scripts\activate
-     ```
-   - Linux/Mac :
-     ```bash
-     source .venv/bin/activate
-     ```
-
-4. **Installer les dépendances**
-
+2. **Dépendances**
    ```bash
    pip install -r requirements.txt
    ```
-
-5. **Lancer l'application**
+3. **Lancement**
    ```bash
    python run_app.py
    ```
-
-L'application s'ouvrira automatiquement dans votre navigateur à l'adresse `http://127.0.0.1:8000`
-
----
-
-## 📁 Structure du Projet
-
-```
-hopital-central/
-├── backend/              # API FastAPI
-│   ├── main.py          # Routes et configuration
-│   ├── models.py        # Modèles de base de données
-│   ├── schemas.py       # Schémas Pydantic
-│   ├── crud.py          # Opérations CRUD
-│   └── database.py      # Configuration DB
-├── templates/           # Templates Jinja2
-│   ├── base.html       # Template de base
-│   ├── index.html      # Page d'accueil
-│   ├── appointments.html
-│   ├── users.html
-│   ├── medications.html
-│   ├── sms.html
-│   ├── whatsapp.html
-│   └── chat.html
-├── static/             # Fichiers statiques
-│   ├── css/
-│   │   └── style.css   # Styles CSS
-│   └── js/
-│       └── app.js      # JavaScript
-├── assets/             # Images et ressources
-├── run_app.py          # Script de lancement
-└── requirements.txt    # Dépendances Python
-```
+   L'application est accessible sur : `http://127.0.0.1:8000`
 
 ---
 
-## 🤝 Contribution
+## 🌟 Points Forts
 
-Les contributions sont les bienvenues ! N'hésitez pas à :
-
-1. Fork le projet
-2. Créer une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+- **Admin Facely Diawara** : Compte administrateur avec gestion totale des utilisateurs.
+- **Sécurité RBAC** : Accès différencié pour Admins, Docteurs et Patients.
+- **Récupération de Compte** : Système de réinitialisation de mot de passe par email.
+- **Suppression Automatique** : Les comptes "Patient" sont éphémères et supprimés à la déconnexion.
 
 ---
 
-## 📝 Licence
+## 📂 Architecture & Rôles des Fichiers
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+### 📁 Dossiers Principaux
+
+- **`backend/`** : Cœur de l'application. Contient la logique serveur (FastAPI), les modèles SQL (`models.py`), les schémas de validation (`schemas.py`), les opérations de base de données (`crud.py`) et la configuration (`database.py`).
+- **`templates/`** : Contient toutes les interfaces utilisateur au format HTML (Jinja2).
+- **`static/`** : Fichiers statiques (CSS pour le design et JS pour la logique d'interaction et de sécurité).
+- **`prescriptions/`** : Répertoire de stockage ou de gestion des ordonnances générées.
+- **`assets/`** : Ressources graphiques et icônes du projet.
+
+### 📄 Fichiers du Backend (Détails)
+
+- **`run_app.py`** : Point d'entrée principal. Configure et lance le serveur FastAPI.
+- **`create_admin.py`** : Script utilitaire pour initialiser le compte administrateur principal.
+- **`messaging_service.py`** : Service gérant la logique des envois de notifications (SMS/WhatsApp).
+- **`config.py`** : Paramètres de configuration globaux de l'application.
+- **`hospital.db`** : Base de données SQLite stockant toutes les informations.
+
+### 📄 Interfaces (Templates)
+
+- **`login.html`** : Système d'authentification, inscription et récupération de mot de passe.
+- **`index.html`** : Page d'accueil du dashboard après connexion.
+- **`appointments.html`** : Interface de gestion et prise de rendez-vous pour les patients.
+- **`users.html`** : Gestion des profils et (pour l'admin) gestion de tous les comptes.
+- **`medications.html`** : Suivi et gestion des stocks de médicaments.
+- **`sms.html` / `whatsapp.html`** : Interfaces d'envoi et de suivi des messages.
+- **`chat.html`** : Module de discussion en temps réel entre utilisateurs.
+- **`patient_list.html`** : Vue d'ensemble des patients pour le personnel médical.
+- **`prescription.html`** : Interface de création et consultation des ordonnances.
+
+### � Tests & Maintenance
+
+- **`test_app.py`**, **`test_backend.py`**, etc. : Scripts de tests automatisés pour garantir la stabilité du code.
+- **`requirements.txt`** : Liste des bibliothèques nécessaires au projet.
+- **`Procfile` / `runtime.txt`** : Fichiers de configuration pour le déploiement sur des plateformes comme Heroku ou Render.
 
 ---
 
-## 👨‍💻 Auteur
+## 📧 Contact
 
-**Bintou** - Projet Académique
-
----
-
-## 📞 Contact
-
-Pour toute question ou suggestion :
-
-- Email : contact@hopitalcentral.sn
-- Urgences : 15
-
----
-
-## 🙏 Remerciements
-
-Merci à tous ceux qui ont contribué à ce projet et aux technologies open source utilisées.
+- **Développeur & Admin** : Facely Diawara
+- **Email** : contact@hopitalcentral.sn
