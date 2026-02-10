@@ -1,9 +1,11 @@
 fastapi
 uvicorn
 sqlalchemy
-pydantic
+pydantic>=2.0
 requests
 twilio
 reportlab
 jinja2
 python-multipart
+passlib[bcrypt]
+bcrypt==3.2.0

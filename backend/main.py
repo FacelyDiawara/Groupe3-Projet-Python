@@ -41,6 +41,11 @@ async def home(request: Request):
     """Page d'accueil"""
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/login")
+async def login_page(request: Request):
+    """Page de connexion"""
+    return templates.TemplateResponse("login.html", {"request": request})
+
 @app.get("/appointments")
 async def appointments_page(request: Request):
     """Page des rendez-vous"""
@@ -166,3 +171,45 @@ def read_prescriptions(skip: int = 0, limit: int = 100, db: Session = Depends(ge
 @app.post("/prescriptions/", response_model=schemas.Prescription)
 def create_prescription(prescription: schemas.PrescriptionCreate, db: Session = Depends(get_db)):
     return crud.create_prescription(db=db, prescription=prescription)
+@app.post("/api/register", response_model=schemas.User)
+def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    print(f"📩 Requête d'inscription reçue pour : {user.username}")
+    db_user = crud.get_user_by_username(db, username=user.username)
+    if db_user:
+        print(f"❌ Utilisateur {user.username} existe déjà")
+        raise HTTPException(status_code=400, detail="Nom d'utilisateur déjà utilisé")
+    result = crud.create_user(db=db, user=user)
+    print(f"✅ Utilisateur {user.username} créé avec succès")
+    return result
+
+@app.post("/api/login")
+async def api_login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_username(db, username=user.username)
+    if not db_user or not crud.verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Identifiants incorrects")
+    return {"id": db_user.id, "username": db_user.username, "role": db_user.role}
+@app.delete("/api/users/{username}")
+def delete_user(username: str, db: Session = Depends(get_db)):
+    db_user = crud.delete_user_by_username(db, username=username)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "Account deleted successfully"}
+
+@app.get("/api/users", response_model=List[schemas.User])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_users(db, skip=skip, limit=limit)
+
+@app.post("/api/password-recovery")
+def recover_password(request: schemas.PasswordResetRequest, db: Session = Depends(get_db)):
+    # This simulates finding the user and sending an email
+    db_user = db.query(models.User).filter(models.User.email == request.email).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Email non trouvé")
+    return {"message": f"Un lien de récupération a été envoyé à {request.email}", "username": db_user.username}
+
+@app.post("/api/password-reset")
+def reset_password(reset: schemas.PasswordReset, db: Session = Depends(get_db)):
+    db_user = crud.update_user_password(db, email=reset.email, new_password=reset.new_password)
+    if not db_user:
+        raise HTTPException(status_code=400, detail="Erreur lors de la réinitialisation")
+    return {"message": "Mot de passe mis à jour avec succès"}

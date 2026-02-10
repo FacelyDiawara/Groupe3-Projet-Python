@@ -17,9 +17,8 @@ class DoctorCreate(DoctorBase):
 class Doctor(DoctorBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        orm_mode = True
 
 # Appointment schemas
 class AppointmentBase(BaseModel):
@@ -37,9 +36,8 @@ class AppointmentCreate(AppointmentBase):
 class Appointment(AppointmentBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        orm_mode = True
 
 # Medication schemas
 class MedicationBase(BaseModel):
@@ -54,9 +52,8 @@ class MedicationCreate(MedicationBase):
 class Medication(MedicationBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        orm_mode = True
 
 # Reminder schemas
 class ReminderBase(BaseModel):
@@ -76,9 +73,8 @@ class ReminderCreate(ReminderBase):
 class Reminder(ReminderBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        orm_mode = True
 
 # Prescription schemas
 class PrescriptionBase(BaseModel):
@@ -98,6 +94,32 @@ class PrescriptionCreate(PrescriptionBase):
 class Prescription(PrescriptionBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        orm_mode = True
+# User schemas
+class UserBase(BaseModel):
+    username: str
+    email: str
+    role: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class PasswordReset(BaseModel):
+    username: str
+    new_password: str
+    email: str
+
+class PasswordResetRequest(BaseModel):
+    email: str
+
+class User(UserBase):
+    id: int
+    is_active: int
+
+    class Config:
+        orm_mode = True

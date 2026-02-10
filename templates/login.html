@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Hôpital Central</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-header">
+            <h1 id="formTitle" style="color: var(--primary-color);">Connexion</h1>
+            <p id="formSubtitle">Accédez au système Hôpital Central</p>
+        </div>
+        
+        <!-- Login Form -->
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="loginUsername">NOM D'UTILISATEUR</label>
+                <input type="text" id="loginUsername" class="login-input" placeholder="Ex: JeanDupont" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">MOT DE PASSE</label>
+                <div class="password-container" style="position: relative;">
+                    <input type="password" id="loginPassword" class="login-input" placeholder="••••••••" required>
+                    <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('loginPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary);"></i>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-login-primary">
+                SE CONNECTER
+            </button>
+            
+            <div class="login-divider">
+                <span>OU</span>
+            </div>
+            
+            <button type="button" class="btn-login-secondary" onclick="toggleForm('register')">
+                CRÉER UN COMPTE
+            </button>
+        </form>
+
+        <!-- Registration Form (Hidden by default) -->
+        <form class="login-form" id="registrationForm" style="display: none;">
+            <div class="form-group">
+                <label for="regUsername">NOM D'UTILISATEUR</label>
+                <input type="text" id="regUsername" class="login-input" placeholder="Ex: JeanDupont" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="regPassword">MOT DE PASSE</label>
+                <div class="password-container" style="position: relative;">
+                    <input type="password" id="regPassword" class="login-input" placeholder="••••••••" required>
+                    <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('regPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary);"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">CONFIRMER LE MOT DE PASSE</label>
+                <div class="password-container" style="position: relative;">
+                    <input type="password" id="confirmPassword" class="login-input" placeholder="••••••••" required>
+                    <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('confirmPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-secondary);"></i>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="regEmail">EMAIL DE RÉCUPÉRATION *</label>
+                <input type="email" id="regEmail" class="login-input" placeholder="Ex: jean@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">TYPE DE COMPTE</label>
+                <select id="role" class="login-input" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 2px solid var(--border-color); cursor: pointer;" required>
+                    <option value="" disabled selected>Choisir un type...</option>
+                    <option value="Admin">Administrateur</option>
+                    <option value="Patient">Patient</option>
+                    <option value="Docteur">Docteur</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-login-primary">
+                CRÉER VOTRE COMPTE
+            </button>
+            
+            <div class="login-divider">
+                <span>OU</span>
+            </div>
+            
+            <button type="button" class="btn-login-secondary" onclick="toggleForm('login')">
+                RETOUR À LA CONNEXION
+            </button>
+        </form>
+        
+        <div class="login-footer" id="loginFooter">
+            <a href="#" onclick="showRecoveryForm()">Mot de passe oublié ?</a>
+        </div>
+
+        <!-- Password Recovery Area (Hidden) -->
+        <div id="recoveryArea" style="display: none; border-top: 1px solid #eee; margin-top: 20px; padding-top: 20px;">
+            <h3 style="font-size: 1rem; margin-bottom: 20px; color: var(--primary-color); text-align: center;">🔑 Récupération de compte</h3>
+            
+            <div id="recoveryStep1">
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px; text-align: center;">Entrez l'email associé à votre compte :</p>
+                <div class="form-group">
+                    <input type="email" id="recoveryEmail" class="login-input" placeholder="votre@email.com">
+                </div>
+                <button type="button" class="btn-login-primary" onclick="requestRecovery()">CONTINUER</button>
+            </div>
+
+            <div id="recoveryStep2" style="display: none;">
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px; text-align: center;">
+                    <strong>Entrez votre nouveau mot de passe :</strong>
+                </p>
+                <div class="form-group">
+                    <label>NOUVEAU MOT DE PASSE</label>
+                    <input type="password" id="newPassword" class="login-input" placeholder="••••••••">
+                </div>
+                <button type="button" class="btn-login-primary" onclick="resetPasswordNow()">MODIFIER</button>
+            </div>
+            
+            <a href="#" onclick="hideRecoveryForm()" style="display: block; text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-secondary); text-decoration: none;">Retour à la connexion</a>
+        </div>
+    </div>
+
+    <script>
+        // Check if opened via file://
+        if (window.location.protocol === 'file:') {
+            alert("⚠️ ATTENTION : Vous avez ouvert le fichier HTML directement. \n\nVous DEVEZ utiliser l'adresse suivante dans votre navigateur : \nhttp://127.0.0.1:8000/login");
+        }
+
+        function toggleForm(mode) {
+            const loginForm = document.getElementById('loginForm');
+            const regForm = document.getElementById('registrationForm');
+            const title = document.getElementById('formTitle');
+            const subtitle = document.getElementById('formSubtitle');
+
+            if (mode === 'register') {
+                loginForm.style.display = 'none';
+                regForm.style.display = 'block';
+                title.textContent = 'Créer un compte';
+                subtitle.textContent = 'Rejoignez le système Hôpital Central';
+            } else {
+                loginForm.style.display = 'block';
+                regForm.style.display = 'none';
+                title.textContent = 'Connexion';
+                subtitle.textContent = 'Accédez au système Hôpital Central';
+            }
+        }
+
+        // Handle Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const btn = e.target.querySelector('.btn-login-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'CONNEXION EN COURS...';
+            btn.style.opacity = '0.7';
+            btn.style.pointerEvents = 'none';
+
+            try {
+                const response = await fetch(`${window.location.origin}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('userRole', data.role);
+                    localStorage.setItem('username', data.username);
+                    window.location.href = '/';
+                } else {
+                    alert('❌ Identifiants incorrects');
+                    btn.innerHTML = originalText;
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                }
+            } catch (err) {
+                console.error("🚨 Erreur de connexion:", err);
+                alert("❌ Erreur de connexion au serveur (Vérifiez que le serveur est lancé)");
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            }
+        });
+
+        // Handle Registration
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+            const email = `${username}@hopital.sn`;
+
+            if (password !== confirm) {
+                alert("❌ Les mots de passe ne correspondent pas !");
+                return;
+            }
+
+            const btn = e.target.querySelector('.btn-login-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'CRÉATION EN COURS...';
+            btn.style.opacity = '0.7';
+            btn.style.pointerEvents = 'none';
+
+            try {
+                const email = document.getElementById('regEmail').value;
+                console.log("📤 Envoi de la requête à:", `${window.location.origin}/api/register`);
+                const response = await fetch(`${window.location.origin}/api/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password, role })
+                });
+
+                console.log("📥 Status réponse:", response.status);
+
+                if (response.ok) {
+                    alert("✅ Compte créé avec succès ! Connectez-vous maintenant.");
+                    toggleForm('login');
+                } else {
+                    const error = await response.json();
+                    console.error("❌ Erreur API:", error);
+                    alert(`❌ Erreur: ${error.detail || "Échec de l'inscription"}`);
+                }
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            } catch (err) {
+                console.error("🚨 Échec réseau:", err);
+                alert(`❌ Erreur de connexion au serveur \n\nAssurez-vous d'utiliser l'adresse: \n${window.location.origin}`);
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            }
+        });
+
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Password Recovery Logic
+        function showRecoveryForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registrationForm').style.display = 'none';
+            document.querySelector('.login-footer').style.display = 'none';
+            document.getElementById('recoveryArea').style.display = 'block';
+        }
+
+        function hideRecoveryForm() {
+            document.getElementById('recoveryArea').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.querySelector('.login-footer').style.display = 'block';
+        }
+
+        async function requestRecovery() {
+            const email = document.getElementById('recoveryEmail').value;
+            if (!email) return alert("Veuillez entrer une adresse email.");
+
+            try {
+                const res = await fetch('/api/password-recovery', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(data.message);
+                    document.getElementById('recoveryStep1').style.display = 'none';
+                    document.getElementById('recoveryStep2').style.display = 'block';
+                    // Store username from response if needed, but endpoint resets by email
+                } else {
+                    const err = await res.json();
+                    alert(`Erreur: ${err.detail}`);
+                }
+            } catch (err) {
+                alert("Erreur réseau");
+            }
+        }
+
+        async function resetPasswordNow() {
+            const email = document.getElementById('recoveryEmail').value;
+            const newPassword = document.getElementById('newPassword').value;
+            if (!newPassword) return alert("Veuillez entrer un nouveau mot de passe.");
+
+            try {
+                const res = await fetch('/api/password-reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, new_password: newPassword, username: '' })
+                });
+
+                if (res.ok) {
+                    alert("✅ Mot de passe réinitialisé ! Vous pouvez vous connecter.");
+                    hideRecoveryForm();
+                } else {
+                    alert("Erreur lors du changement.");
+                }
+            } catch (err) {
+                alert("Erreur réseau");
+            }
+        }
+
+        function handleForgotPassword() {
+            alert("🔑 Veuillez contacter l'administrateur pour réinitialiser votre mot de passe.");
+        }
+    </script>
+</body>
+</html>

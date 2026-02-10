@@ -11,6 +11,7 @@
         <div class="tab-buttons">
             <button class="tab-btn active" onclick="switchTab('list')">LISTE DES DOCTEURS</button>
             <button class="tab-btn" onclick="switchTab('add')">AJOUTEZ UN DOCTEUR</button>
+            <button class="tab-btn admin-only-feature" id="adminUsersTab" onclick="switchTab('admin-users')" style="display: none;">GESTION DES COMPTES</button>
         </div>
         
         <!-- Tab Content: Liste des Docteurs -->
@@ -107,6 +108,28 @@
                 </form>
             </div>
         </div>
+
+        <!-- Tab Content: Gestion des Comptes (Admin Only) -->
+        <div id="adminUsersTabContent" class="tab-content">
+            <div class="wide-form-container" style="max-width: 100%;">
+                <h2 style="margin-bottom: 20px;">👥 Gestion de tous les comptes</h2>
+                <div class="table-container" style="padding: 0; box-shadow: none;">
+                    <table class="data-table" id="allUsersTable">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allUsersList">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -133,10 +156,18 @@
         } else if (tabName === 'add') {
             document.getElementById('addTab').classList.add('active');
             document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        } else if (tabName === 'admin-users') {
+            document.getElementById('adminUsersTabContent').classList.add('active');
+            document.getElementById('adminUsersTab').classList.add('active');
+            loadAllUsers();
         }
     }
     
     document.addEventListener('DOMContentLoaded', () => {
+        const role = localStorage.getItem('userRole');
+        if (role === 'Admin') {
+            document.getElementById('adminUsersTab').style.display = 'inline-block';
+        }
         loadDoctors();
         displayCurrentPatient();
     });
@@ -337,6 +368,48 @@
         editingDoctorId = null;
         document.getElementById('formTitle').textContent = 'Ajouter un Nouveau Docteur';
         document.getElementById('doctorForm').reset();
+    }
+
+    // Admin: Load all users
+    async function loadAllUsers() {
+        try {
+            const response = await fetch('/api/users');
+            const users = await response.json();
+            const currentUser = localStorage.getItem('username');
+            
+            const tbody = document.getElementById('allUsersList');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td><strong>${user.username}</strong></td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td><span class="badge ${user.role.toLowerCase()}-role" style="padding: 4px 8px; border-radius: 4px; background: #f1f5f9; font-size: 11px; font-weight: 700;">${user.role}</span></td>
+                    <td>
+                        ${user.username !== currentUser ? 
+                          `<button class="btn btn-danger btn-small" onclick="deleteAnyUser('${user.username}')">🗑 SUPPRIMER</button>` : 
+                          '<span style="font-size: 11px; color: var(--text-secondary);">Connecté</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function deleteAnyUser(username) {
+        if (!confirm(`⚠️ Êtes-vous sûr de vouloir supprimer définitivement le compte : ${username} ?`)) return;
+        
+        try {
+            const response = await fetch(`/api/users/${username}`, { method: 'DELETE' });
+            if (response.ok) {
+                alert('✅ Compte supprimé avec succès');
+                loadAllUsers();
+                loadDoctors(); // Sync doctors list if it was a doctor
+            } else {
+                alert('❌ Erreur lors de la suppression');
+            }
+        } catch (err) {
+            console.error(err);
+        }
     }
 </script>
 {% endblock %}

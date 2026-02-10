@@ -1,5 +1,32 @@
 from sqlalchemy.orm import Session
+from datetime import timedelta
 from . import models, schemas
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+# User Operations
+def get_user_by_username(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
+
+def create_user(db: Session, user: schemas.UserCreate):
+    hashed_password = get_password_hash(user.password)
+    db_user = models.User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password,
+        role=user.role
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 # Doctor Operations
 def get_doctor(db: Session, doctor_id: int):
@@ -98,21 +125,30 @@ def get_prescriptions(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Prescription).offset(skip).limit(limit).all()
 
 def cleanup_expired_prescriptions(db: Session):
-    from datetime import datetime, timedelta
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    from datetime import datetime
+    today = datetime.now().strftime("%d/%m/%Y")
     
-    # We can't easily do timedelta arithmetic in a single SQLite query through SQLAlchemy without more setup,
-    # but we can filter better to avoid loading all prescriptions if we have many.
-    # For now, let's just make the existing loop slightly cleaner.
+    # In SQLite, we can't easily do date math in strings, but we can filter
+    # For simplicity and reliability, we'll keep the logic but make it more efficient if possible.
+    # Actually, the previous logic was parsing EVERY date. 
+    # Let's optimize it by only fetching what we need to check, or doing a bulk delete if possible.
+    
     prescriptions = db.query(models.Prescription).all()
+    current_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    to_delete = []
     for p in prescriptions:
         try:
             presc_date = datetime.strptime(p.date_prescription, "%d/%m/%Y")
-            if today >= presc_date + timedelta(days=p.duree_jours):
-                db.delete(p)
+            expiry_date = presc_date + timedelta(days=p.duree_jours)
+            if current_time >= expiry_date:
+                to_delete.append(p.id)
         except Exception:
             continue
-    db.commit()
+            
+    if to_delete:
+        db.query(models.Prescription).filter(models.Prescription.id.in_(to_delete)).delete(synchronize_session=False)
+        db.commit()
 
 def create_prescription(db: Session, prescription: schemas.PrescriptionCreate):
     db_prescription = models.Prescription(**prescription.dict())
@@ -120,3 +156,21 @@ def create_prescription(db: Session, prescription: schemas.PrescriptionCreate):
     db.commit()
     db.refresh(db_prescription)
     return db_prescription
+
+def delete_user_by_username(db: Session, username: str):
+    db_user = db.query(models.User).filter(models.User.username == username).first()
+    if db_user:
+        db.delete(db_user)
+        db.commit()
+    return db_user
+
+def get_users(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.User).offset(skip).limit(limit).all()
+
+def update_user_password(db: Session, email: str, new_password: str):
+    db_user = db.query(models.User).filter(models.User.email == email).first()
+    if db_user:
+        db_user.hashed_password = get_password_hash(new_password)
+        db.commit()
+        db.refresh(db_user)
+    return db_user

@@ -25,7 +25,7 @@ def start_application():
     # Lancer le serveur FastAPI
     backend_process = subprocess.Popen(
         [python_exe, "-m", "uvicorn", "backend.main:app", 
-         "--host", "127.0.0.1", "--port", "8000", "--no-access-log"]
+         "--host", "127.0.0.1", "--port", "8000"]
     )
     
     # Attendre que le serveur démarre
