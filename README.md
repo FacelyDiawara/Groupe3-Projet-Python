@@ -4,8 +4,7 @@ Une application web complète de gestion hospitalière avec système de rappel a
 
 ## 🌐 Utiliser l'Application
 
-**Accès direct en ligne** : [https://hopital-central.onrender.com](https://hopital-central.onrender.com)
-
+**Accès direct en ligne** http://127.0.0.1:8000
 Cliquez sur le lien et commencez à utiliser l'application. **Aucune installation requise !**
 
 ---
