@@ -49,7 +49,7 @@ Si vous souhaitez exécuter l'application localement pour le développement :
 1. **Cloner le repository**
 
    ```bash
-   git clone https://github.com/FacelyDiawaraProjet-Python.git
+   git clone https://github.com/FacelyDiawara:Groupe3-Projet-Python.git
    cd hopital-central
    ```
 
