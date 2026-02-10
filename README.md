@@ -12,10 +12,12 @@ Une application web moderne pour la gestion des services hospitaliers, incluant 
    cd Projet
    ```
 2. **Dépendances**
+3. Installation des dépendances ou bibliothèques pour l'exécution du projet
+4. Dans votre terminal placer vous dans le dossier du projet après le clonage puis exécuté la commande ci_dessous le fichier qui contient les bibliothèques externe du projet.
    ```bash
    pip install -r requirements.txt
    ```
-3. **Lancement**
+5. **Lancement**
    ```bash
    python run_app.py
    ```
@@ -25,7 +27,7 @@ Une application web moderne pour la gestion des services hospitaliers, incluant 
 
 ## 🌟 Points Forts
 
-- **Admin Facely Diawara** : Compte administrateur avec gestion totale des utilisateurs.
+- **Admin ** : Compte administrateur avec gestion totale des utilisateurs.
 - **Sécurité RBAC** : Accès différencié pour Admins, Docteurs et Patients.
 - **Récupération de Compte** : Système de réinitialisation de mot de passe par email.
 - **Suppression Automatique** : Les comptes "Patient" sont éphémères et supprimés à la déconnexion.
@@ -33,6 +35,30 @@ Une application web moderne pour la gestion des services hospitaliers, incluant 
 ---
 
 ## 📂 Architecture & Rôles des Fichiers
+hopital-central/
+├── backend/              # API FastAPI
+│   ├── main.py          # Routes et configuration
+│   ├── models.py        # Modèles de base de données
+│   ├── schemas.py       # Schémas Pydantic
+│   ├── crud.py          # Opérations CRUD
+│   └── database.py      # Configuration DB
+├── templates/           # Templates Jinja2
+│   ├── base.html       # Template de base
+│   ├── index.html      # Page d'accueil
+│   ├── appointments.html
+│   ├── users.html
+│   ├── medications.html
+│   ├── sms.html
+│   ├── whatsapp.html
+│   └── chat.html
+├── static/             # Fichiers statiques
+│   ├── css/
+│   │   └── style.css   # Styles CSS
+│   └── js/
+│       └── app.js      # JavaScript
+├── assets/             # Images et ressources
+├── run_app.py          # Script de lancement
+└── requirements.txt    # Dépendances Python
 
 ### 📁 Dossiers Principaux
 
