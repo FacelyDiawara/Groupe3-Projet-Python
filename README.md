@@ -4,8 +4,7 @@ Une application web complète de gestion hospitalière avec système de rappel a
 
 ## 🌐 Utiliser l'Application
 
-**Accès direct en ligne** : [https://hopital-central.onrender.com](https://hopital-central.onrender.com)
-
+**Accès direct en ligne** : http://127.0.0.1:8000 dans votre navigateur
 Cliquez sur le lien et commencez à utiliser l'application. **Aucune installation requise !**
 
 ---
@@ -50,7 +49,7 @@ Si vous souhaitez exécuter l'application localement pour le développement :
 1. **Cloner le repository**
 
    ```bash
-   git clone https://github.com/votre-username/hopital-central.git
+   git clone https://github.com/FacelyDiawaraProjet-Python.git
    cd hopital-central
    ```
 
