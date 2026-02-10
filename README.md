@@ -1,7 +1,12 @@
 # Hôpital Central - Système de Gestion Hospitalière
 
-Une application web moderne pour la gestion des services hospitaliers, incluant la gestion des patients, des docteurs, des prescriptions et des rappels automatisés.
+Une application web moderne pour la gestion des services hospitaliers, incluant la gestion des patients, des docteurs, des prescriptions et des rappels automatisés.L
 
+LISTE DES MEMBRES DU PROJET
+DIAWARA FACELY
+DIALLO HASSANATOU
+DIALLO NENE AISSATOU
+KOUROUMA SOLO
 ---
 
 ## 💻 Installation Rapide
