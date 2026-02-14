@@ -7,6 +7,7 @@ from typing import List
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
+from .ai_assistant.service import HealthBotService
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -184,7 +185,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/api/login")
 async def api_login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_username(db, username=user.username)
+    db_user = crud.get_user_by_email(db, email=user.email)
     if not db_user or not crud.verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Identifiants incorrects")
     return {"id": db_user.id, "username": db_user.username, "role": db_user.role}
@@ -213,3 +214,48 @@ def reset_password(reset: schemas.PasswordReset, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(status_code=400, detail="Erreur lors de la réinitialisation")
     return {"message": "Mot de passe mis à jour avec succès"}
+
+# ================= CHAT ROUTES =================
+
+@app.get("/api/chat/conversations", response_model=List[schemas.Conversation])
+def get_conversations(user_id: int, db: Session = Depends(get_db)):
+    return crud.get_user_conversations(db, user_id=user_id)
+
+@app.post("/api/chat/", response_model=schemas.ChatResponse)
+async def chat_with_bot(request: schemas.ChatRequest, user_id: int, db: Session = Depends(get_db)):
+    # 1. Obtenir ou créer la conversation
+    if not request.conversation_id:
+        # Créer un titre basé sur le début du message
+        title = request.message[:30] + "..." if len(request.message) > 30 else request.message
+        conv = crud.create_conversation(db, user_id=user_id, title=title)
+        conv_id = conv.id
+    else:
+        conv_id = request.conversation_id
+        conv = crud.get_conversation(db, conversation_id=conv_id)
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation non trouvée")
+
+    # 2. Sauvegarder le message de l'utilisateur
+    crud.create_message(db, conversation_id=conv_id, role="user", content=request.message)
+
+    # 3. Récupérer l'historique pour l'IA
+    history = []
+    for msg in conv.messages:
+        history.append({"role": msg.role, "content": msg.content})
+
+    # 4. Appeler le service IA
+    ai_result = await HealthBotService.get_ai_response(db, user_id, request.message, history)
+
+    # 5. Sauvegarder la réponse de l'IA
+    crud.create_message(db, conversation_id=conv_id, role="assistant", content=ai_result["content"])
+
+    return {
+        "response": ai_result["content"],
+        "conversation_id": conv_id,
+        "suggestions": ai_result["suggestions"]
+    }
+
+@app.delete("/api/chat/conversations/{conversation_id}")
+def delete_chat(conversation_id: int, db: Session = Depends(get_db)):
+    crud.delete_conversation(db, conversation_id=conversation_id)
+    return {"message": "Discussion supprimée"}

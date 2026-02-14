@@ -106,7 +106,7 @@ class UserCreate(UserBase):
     password: str
 
 class UserLogin(BaseModel):
-    username: str
+    email: str
     password: str
 
 class PasswordReset(BaseModel):
@@ -123,3 +123,42 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
+
+# Chat Schemas
+class MessageBase(BaseModel):
+    content: str
+
+class MessageCreate(MessageBase):
+    role: str
+
+class Message(MessageBase):
+    id: int
+    role: str
+    timestamp: str
+
+    class Config:
+        orm_mode = True
+
+class ConversationBase(BaseModel):
+    title: Optional[str] = "Nouvelle Discussion"
+
+class ConversationCreate(ConversationBase):
+    pass
+
+class Conversation(ConversationBase):
+    id: int
+    user_id: int
+    created_at: str
+    messages: List[Message] = []
+
+    class Config:
+        orm_mode = True
+
+class ChatRequest(BaseModel):
+    message: str
+    conversation_id: Optional[int] = None
+
+class ChatResponse(BaseModel):
+    response: str
+    conversation_id: int
+    suggestions: List[str] = []

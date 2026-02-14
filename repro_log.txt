@@ -1,0 +1,8 @@
+--- Repro Log ---
+Testing connection to http://127.0.0.1:8000...
+Root endpoint status: 200
+
+Testing Registration...
+Registration status: 400
+Response body: {"detail":"Nom d'utilisateur déjà utilisé"}
+⚠️ Registration failed (expected if user exists)

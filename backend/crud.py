@@ -15,13 +15,17 @@ def verify_password(plain_password, hashed_password):
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
+
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.password)
     db_user = models.User(
         username=user.username,
         email=user.email,
         hashed_password=hashed_password,
-        role=user.role
+        role=user.role,
+        is_active=1
     )
     db.add(db_user)
     db.commit()
@@ -174,3 +178,42 @@ def update_user_password(db: Session, email: str, new_password: str):
         db.commit()
         db.refresh(db_user)
     return db_user
+
+# Chat CRUD
+def create_conversation(db: Session, user_id: int, title: str = "Nouvelle Discussion"):
+    from datetime import datetime
+    db_conv = models.Conversation(
+        user_id=user_id,
+        title=title,
+        created_at=datetime.now().strftime("%d/%m/%Y %H:%M")
+    )
+    db.add(db_conv)
+    db.commit()
+    db.refresh(db_conv)
+    return db_conv
+
+def get_conversation(db: Session, conversation_id: int):
+    return db.query(models.Conversation).filter(models.Conversation.id == conversation_id).first()
+
+def get_user_conversations(db: Session, user_id: int):
+    return db.query(models.Conversation).filter(models.Conversation.user_id == user_id).order_by(models.Conversation.id.desc()).all()
+
+def create_message(db: Session, conversation_id: int, role: str, content: str):
+    from datetime import datetime
+    db_msg = models.Message(
+        conversation_id=conversation_id,
+        role=role,
+        content=content,
+        timestamp=datetime.now().strftime("%H:%M")
+    )
+    db.add(db_msg)
+    db.commit()
+    db.refresh(db_msg)
+    return db_msg
+
+def delete_conversation(db: Session, conversation_id: int):
+    db_conv = db.query(models.Conversation).filter(models.Conversation.id == conversation_id).first()
+    if db_conv:
+        db.delete(db_conv)
+        db.commit()
+    return db_conv

@@ -4,6 +4,10 @@ import time
 import sys
 import os
 
+# Configuration de l'encodage UTF-8 pour Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 def start_application():
     """
     Démarre l'application web Hôpital Central
