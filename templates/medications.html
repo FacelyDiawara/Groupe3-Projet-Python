@@ -5,17 +5,22 @@
 {% block content %}
 <div class="page-container">
     <h1 class="page-title">💊 Prise de Médicament</h1>
-    
+
     <div class="prescription-info" id="prescriptionInfo">
         <!-- Populated by JavaScript -->
     </div>
-    
+
     <!-- Action Buttons -->
     <div class="action-buttons-bar">
         <button class="btn btn-success" onclick="generateSMS()">📱 Générer Rappel SMS</button>
         <button class="btn btn-success" onclick="generateWhatsApp()">💬 Générer Rappel WhatsApp</button>
+        <button class="btn btn-primary" onclick="generatePrescription()" style="background-color: #8b5cf6;">📄
+            PRÉVISUALISER
+            L'ORDONNANCE</button>
+        <button class="btn btn-info" onclick="saveAndGoToPatients()" style="background-color: #0ea5e9; color: white;">✅
+            ENREGISTRER & VOIR LA LISTE</button>
     </div>
-    
+
     <!-- Two Column Layout -->
     <div class="two-column-layout">
         <!-- Left: Form -->
@@ -27,25 +32,26 @@
                         <label for="medicationName">Nom du Médicament *</label>
                         <input type="text" id="medicationName" name="medicationName" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="dosage">Dosage *</label>
                         <input type="text" id="dosage" name="dosage" placeholder="Ex: 500mg" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="frequency">Fréquence *</label>
                         <input type="text" id="frequency" name="frequency" placeholder="Ex: 3 fois par jour" required>
                     </div>
-                    
+
                     <div class="form-actions">
                         <button type="submit" class="btn btn-success">✓ Ajouter Médicament</button>
-                        <button type="button" class="btn btn-danger" onclick="deleteSelectedMedication()">🗑 Supprimer le Produit</button>
+                        <button type="button" class="btn btn-danger" onclick="deleteSelectedMedication()">🗑 Supprimer
+                            le Produit</button>
                     </div>
                 </form>
             </div>
         </div>
-        
+
         <!-- Right: Table -->
         <div class="right-column">
             <div class="compact-table-container">
@@ -75,16 +81,16 @@
 <script>
     let selectedMedicationId = null;
     let medications = [];
-    
+
     document.addEventListener('DOMContentLoaded', () => {
         displayPrescriptionInfo();
         loadMedications();
     });
-    
+
     function displayPrescriptionInfo() {
         const patientName = sessionStorage.getItem('patientName');
         const doctorName = sessionStorage.getItem('doctorName');
-        
+
         if (patientName && doctorName) {
             document.getElementById('prescriptionInfo').innerHTML = `
                 <div class="info-card">
@@ -94,24 +100,24 @@
             `;
         }
     }
-    
+
     document.getElementById('medicationForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const formData = {
             nom_produit: document.getElementById('medicationName').value,
             dose: document.getElementById('dosage').value,
             quantite: parseInt(document.getElementById('frequency').value) || 1,
             date_prescription: new Date().toISOString().split('T')[0]
         };
-        
+
         try {
             const response = await fetch('/medications/', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-            
+
             if (response.ok) {
                 alert('✅ Médicament ajouté avec succès !');
                 e.target.reset();
@@ -124,12 +130,12 @@
             alert('❌ Erreur de connexion');
         }
     });
-    
+
     async function loadMedications() {
         try {
             const response = await fetch('/medications/');
             medications = await response.json();
-            
+
             const tbody = document.querySelector('#medicationsTable tbody');
             tbody.innerHTML = medications.map(med => `
                 <tr onclick="selectMedication(${med.id})" style="cursor: pointer;" id="row-${med.id}">
@@ -145,36 +151,36 @@
             console.error('Error loading medications:', error);
         }
     }
-    
+
     // Select medication
     function selectMedication(id) {
         selectedMedicationId = id;
-        
+
         // Update radio button
         document.querySelector(`input[value="${id}"]`).checked = true;
-        
+
         // Highlight selected row
         document.querySelectorAll('#medicationsTable tbody tr').forEach(row => {
             row.style.backgroundColor = '';
         });
         document.getElementById(`row-${id}`).style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
     }
-    
+
     // Delete selected medication
     async function deleteSelectedMedication() {
         if (!selectedMedicationId) {
             alert('⚠️ Veuillez sélectionner un médicament à supprimer');
             return;
         }
-        
+
         const medication = medications.find(m => m.id === selectedMedicationId);
         if (!medication) return;
-        
+
         const confirmation = confirm(`⚠️ CONFIRMATION DE SUPPRESSION\n\nÊtes-vous sûr de vouloir supprimer le médicament :\n${medication.nom_produit} ?\n\nCette action est irréversible.\n\nCliquez sur OK pour confirmer (OUI)\nCliquez sur Annuler pour annuler (NON)`);
-        
+
         if (confirmation) {
             try {
-                const response = await fetch(`/medications/${selectedMedicationId}`, {method: 'DELETE'});
+                const response = await fetch(`/medications/${selectedMedicationId}`, { method: 'DELETE' });
                 if (response.ok) {
                     alert('✅ Médicament supprimé avec succès !');
                     selectedMedicationId = null;
@@ -188,13 +194,86 @@
             }
         }
     }
-    
+
     function generateSMS() {
         window.location.href = '/sms';
     }
-    
+
     function generateWhatsApp() {
         window.location.href = '/whatsapp';
+    }
+
+    function generatePrescription() {
+        if (medications.length === 0) {
+            alert('⚠️ Aucun médicament à prescrire.');
+            return;
+        }
+
+        // Sauvegarder les médicaments actuels pour la page ordonnance
+        sessionStorage.setItem('currentPrescriptionMedications', JSON.stringify(medications));
+
+        // Rediriger vers la page d'ordonnance
+        window.location.href = '/prescription';
+    }
+
+    async function saveAndGoToPatients() {
+        if (medications.length === 0) {
+            alert('⚠️ Aucun médicament à prescrire.');
+            return;
+        }
+
+        if (!confirm('Voulez-vous enregistrer cette ordonnance et aller directement à la liste des patients ?')) {
+            return;
+        }
+
+        try {
+            // 1. Récupérer les infos de session
+            const patientName = sessionStorage.getItem('patientName') || 'Anonyme';
+            const patientParts = patientName.split(' ');
+            const patientNom = patientParts[0] || 'Anonyme';
+            const patientPrenom = patientParts.slice(1).join(' ') || '';
+
+            const patientSexe = sessionStorage.getItem('patientSexe') || 'N/A';
+            const patientPhone = sessionStorage.getItem('patientPhone') || 'N/A';
+            const doctorName = sessionStorage.getItem('doctorName') || 'Médecin';
+            const doctorPhone = sessionStorage.getItem('doctorPhone') || 'N/A';
+            const todayStr = new Date().toLocaleDateString('fr-FR');
+            let duree = parseInt(sessionStorage.getItem('duration')) || 30;
+
+            const prescriptionData = {
+                nom_patient: patientNom,
+                prenom_patient: patientPrenom,
+                telephone_patient: patientPhone,
+                sexe_patient: patientSexe,
+                nom_docteur: doctorName,
+                telephone_docteur: doctorPhone,
+                medicaments: JSON.stringify(medications),
+                date_prescription: todayStr,
+                duree_jours: duree
+            };
+
+            // 2. Enregistrer l'ordonnance
+            const resp = await fetch('/prescriptions/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(prescriptionData)
+            });
+
+            if (resp.ok) {
+                // 3. VIDER LA TABLE TEMPORAIRE (CRITIQUE)
+                await fetch('/medications/', { method: 'DELETE' });
+
+                // 4. Vider la session et rediriger
+                sessionStorage.clear();
+                alert('✅ Ordonnance enregistrée automatiquement !');
+                window.location.href = '/patients_list';
+            } else {
+                alert('❌ Erreur lors de l\'enregistrement automatique.');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('❌ Erreur de connexion au serveur.');
+        }
     }
 </script>
 {% endblock %}
