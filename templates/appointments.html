@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="page-container">
-    <h1 class="page-title">📋 Gestion des Patients</h1>
+    <h1 class="page-title"> Gestion des Patients</h1>
     
     <!-- Action Buttons -->
     <div class="action-buttons-bar">
@@ -183,28 +183,28 @@
     // Delete selected patient
     async function deleteSelectedPatient() {
         if (!selectedPatientId) {
-            alert('⚠️ Veuillez sélectionner un patient à supprimer');
+            alert(' Veuillez sélectionner un patient à supprimer');
             return;
         }
         
         const patient = patients.find(p => p.id === selectedPatientId);
         if (!patient) return;
         
-        const confirmation = confirm(`⚠️ CONFIRMATION DE SUPPRESSION\n\nÊtes-vous sûr de vouloir supprimer le patient :\n${patient.nom_patient} ${patient.prenom_patient} ?\n\nCette action est irréversible.\n\nCliquez sur OK pour confirmer (OUI)\nCliquez sur Annuler pour annuler (NON)`);
+        const confirmation = confirm(` CONFIRMATION DE SUPPRESSION\n\nÊtes-vous sûr de vouloir supprimer le patient :\n${patient.nom_patient} ${patient.prenom_patient} ?\n\nCette action est irréversible.\n\nCliquez sur OK pour confirmer (OUI)\nCliquez sur Annuler pour annuler (NON)`);
         
         if (confirmation) {
             try {
                 const response = await fetch(`/appointments/${selectedPatientId}`, {method: 'DELETE'});
                 if (response.ok) {
-                    alert('✅ Patient supprimé avec succès !');
+                    alert(' Patient supprimé avec succès !');
                     selectedPatientId = null;
                     loadPatients();
                 } else {
-                    alert('❌ Erreur lors de la suppression');
+                    alert(' Erreur lors de la suppression');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('❌ Erreur de connexion');
+                alert(' Erreur de connexion');
             }
         }
     }
@@ -212,7 +212,7 @@
     // Navigate to doctors page
     function navigateToDoctors() {
         if (!selectedPatientId) {
-            alert('⚠️ Veuillez d\'abord sélectionner un patient dans la liste');
+            alert(' Veuillez d\'abord sélectionner un patient dans la liste');
             return;
         }
         window.location.href = '/users';

@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="page-container">
-    <h1 class="page-title">💬 Générer Rappel WhatsApp</h1>
+    <h1 class="page-title"> Générer Rappel WhatsApp</h1>
     
     <div class="form-container">
         <form id="whatsappForm" class="form">
@@ -122,14 +122,14 @@ D'après votre Dr ${doctorName}`;
                 // 3. Clear the medications table in the database immediately
                 await fetch('/medications/', { method: 'DELETE' });
                 
-                alert('✅ WhatsApp programmé avec succès ! Redirection vers l\'ordonnance...');
+                alert(' WhatsApp programmé avec succès ! Redirection vers l\'ordonnance...');
                 window.location.href = '/prescription';
             } else {
-                alert('❌ Erreur lors de l\'envoi');
+                alert(' Erreur lors de l\'envoi');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('❌ Erreur de connexion');
+            alert(' Erreur de connexion');
         }
     });
 </script>

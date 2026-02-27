@@ -19,7 +19,7 @@
         <form class="login-form" id="loginForm">
             <div class="form-group">
                 <label for="loginUsername">NOM D'UTILISATEUR</label>
-                <input type="text" id="loginUsername" class="login-input" placeholder="Ex: JeanDupont" required>
+                <input type="text" id="loginUsername" class="login-input" placeholder="Ex: FACELY DIAWARA" required>
             </div>
             
             <div class="form-group">
@@ -47,7 +47,7 @@
         <form class="login-form" id="registrationForm" style="display: none;">
             <div class="form-group">
                 <label for="regUsername">NOM D'UTILISATEUR</label>
-                <input type="text" id="regUsername" class="login-input" placeholder="Ex: JeanDupont" required>
+                <input type="text" id="regUsername" class="login-input" placeholder="Ex: FACELY DIAWARA" required>
             </div>
             
             <div class="form-group">
@@ -68,12 +68,12 @@
             
             <div class="form-group">
                 <label for="regEmail">EMAIL DE RÉCUPÉRATION *</label>
-                <input type="email" id="regEmail" class="login-input" placeholder="Ex: jean@email.com" required>
+                <input type="email" id="regEmail" class="login-input" placeholder="Ex: facelydiawara4@email.com" required>
             </div>
 
             <div class="form-group">
                 <label for="role">TYPE DE COMPTE</label>
-                <select id="role" class="login-input" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 2px solid var(--border-color); cursor: pointer;" required>
+                <select id="role" class="login-input" style="background-color: var(--bg-secondary);color: var(--text-primary); border: 2px solid var(--border-color); cursor: pointer;" required>
                     <option value="" disabled selected>Choisir un type...</option>
                     <option value="Admin">Administrateur</option>
                     <option value="Patient">Patient</option>
@@ -128,7 +128,7 @@
     <script>
         // Check if opened via file://
         if (window.location.protocol === 'file:') {
-            alert("⚠️ ATTENTION : Vous avez ouvert le fichier HTML directement. \n\nVous DEVEZ utiliser l'adresse suivante dans votre navigateur : \nhttp://127.0.0.1:8000/login");
+            alert(" ATTENTION : Vous avez ouvert le fichier HTML directement. \n\nVous DEVEZ utiliser l'adresse suivante dans votre navigateur : \nhttp://127.0.0.1:8000/login");
         }
 
         function toggleForm(mode) {
@@ -175,14 +175,14 @@
                     localStorage.setItem('username', data.username);
                     window.location.href = '/';
                 } else {
-                    alert('❌ Identifiants incorrects');
+                    alert(' Identifiants incorrects');
                     btn.innerHTML = originalText;
                     btn.style.opacity = '1';
                     btn.style.pointerEvents = 'auto';
                 }
             } catch (err) {
-                console.error("🚨 Erreur de connexion:", err);
-                alert("❌ Erreur de connexion au serveur (Vérifiez que le serveur est lancé)");
+                console.error(" Erreur de connexion:", err);
+                alert(" Erreur de connexion au serveur (Vérifiez que le serveur est lancé)");
                 btn.innerHTML = originalText;
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
@@ -199,7 +199,7 @@
             const email = `${username}@hopital.sn`;
 
             if (password !== confirm) {
-                alert("❌ Les mots de passe ne correspondent pas !");
+                alert("Les mots de passe ne correspondent pas !");
                 return;
             }
 
@@ -218,22 +218,22 @@
                     body: JSON.stringify({ username, email, password, role })
                 });
 
-                console.log("📥 Status réponse:", response.status);
+                console.log(" Status réponse:", response.status);
 
                 if (response.ok) {
-                    alert("✅ Compte créé avec succès ! Connectez-vous maintenant.");
+                    alert(" Compte créé avec succès ! Connectez-vous maintenant.");
                     toggleForm('login');
                 } else {
                     const error = await response.json();
-                    console.error("❌ Erreur API:", error);
-                    alert(`❌ Erreur: ${error.detail || "Échec de l'inscription"}`);
+                    console.error(" Erreur API:", error);
+                    alert(` Erreur: ${error.detail || "Échec de l'inscription"}`);
                 }
                 btn.innerHTML = originalText;
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
             } catch (err) {
-                console.error("🚨 Échec réseau:", err);
-                alert(`❌ Erreur de connexion au serveur \n\nAssurez-vous d'utiliser l'adresse: \n${window.location.origin}`);
+                console.error(" Échec réseau:", err);
+                alert(` Erreur de connexion au serveur \n\nAssurez-vous d'utiliser l'adresse: \n${window.location.origin}`);
                 btn.innerHTML = originalText;
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
@@ -307,7 +307,7 @@
                 });
 
                 if (res.ok) {
-                    alert("✅ Mot de passe réinitialisé ! Vous pouvez vous connecter.");
+                    alert(" Mot de passe réinitialisé ! Vous pouvez vous connecter.");
                     hideRecoveryForm();
                 } else {
                     alert("Erreur lors du changement.");
@@ -318,7 +318,7 @@
         }
 
         function handleForgotPassword() {
-            alert("🔑 Veuillez contacter l'administrateur pour réinitialiser votre mot de passe.");
+            alert(" Veuillez contacter l'administrateur pour réinitialiser votre mot de passe.");
         }
     </script>
 </body>

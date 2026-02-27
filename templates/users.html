@@ -207,12 +207,12 @@
                 });
                 
                 if (response.ok) {
-                    alert('✅ Docteur modifié avec succès !');
+                    alert(' Docteur modifié avec succès !');
                     cancelEdit();
                     loadDoctors();
                     switchTab('list');
                 } else {
-                    alert('❌ Erreur lors de la modification');
+                    alert(' Erreur lors de la modification');
                 }
             } else {
                 response = await fetch('/doctors/', {
@@ -222,17 +222,17 @@
                 });
                 
                 if (response.ok) {
-                    alert('✅ Docteur ajouté avec succès !');
+                    alert(' Docteur ajouté avec succès !');
                     e.target.reset();
                     loadDoctors();
                     switchTab('list');
                 } else {
-                    alert('❌ Erreur lors de l\'ajout');
+                    alert(' Erreur lors de l\'ajout');
                 }
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('❌ Erreur de connexion');
+            alert(' Erreur de connexion');
         }
     });
     
@@ -295,7 +295,7 @@
     // Modify selected doctor
     function modifySelectedDoctor() {
         if (!selectedDoctorId) {
-            alert('⚠️ Veuillez sélectionner un docteur à modifier');
+            alert(' Veuillez sélectionner un docteur à modifier');
             return;
         }
         
@@ -317,29 +317,29 @@
     // Delete selected doctor
     async function deleteSelectedDoctor() {
         if (!selectedDoctorId) {
-            alert('⚠️ Veuillez sélectionner un docteur à supprimer');
+            alert(' Veuillez sélectionner un docteur à supprimer');
             return;
         }
         
         const doctor = doctors.find(d => d.id === selectedDoctorId);
         if (!doctor) return;
         
-        const confirmation = confirm(`⚠️ CONFIRMATION DE SUPPRESSION\n\nÊtes-vous sûr de vouloir supprimer le docteur :\n${doctor.nom} ${doctor.prenom} ?\n\nCette action est irréversible.\n\nCliquez sur OK pour confirmer (OUI)\nCliquez sur Annuler pour annuler (NON)`);
+        const confirmation = confirm(` CONFIRMATION DE SUPPRESSION\n\nÊtes-vous sûr de vouloir supprimer le docteur :\n${doctor.nom} ${doctor.prenom} ?\n\nCette action est irréversible.\n\nCliquez sur OK pour confirmer (OUI)\nCliquez sur Annuler pour annuler (NON)`);
         
         if (confirmation) {
             try {
                 const response = await fetch(`/doctors/${selectedDoctorId}`, {method: 'DELETE'});
                 if (response.ok) {
-                    alert('✅ Docteur supprimé avec succès !');
+                    alert(' Docteur supprimé avec succès !');
                     selectedDoctorId = null;
                     document.getElementById('doctorDetails').innerHTML = '<p style="text-align: center; padding: 40px 20px;">Sélectionnez un docteur dans la liste pour voir ses détails</p>';
                     loadDoctors();
                 } else {
-                    alert('❌ Erreur lors de la suppression');
+                    alert(' Erreur lors de la suppression');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('❌ Erreur de connexion');
+                alert(' Erreur de connexion');
             }
         }
     }
@@ -352,12 +352,12 @@
     // Go to discussion page
     function goToChat() {
         if (!sessionStorage.getItem('patientName')) {
-            alert('⚠️ Veuillez d\'abord sélectionner un patient sur la page Enregistrer un Patient');
+            alert(' Veuillez d\'abord sélectionner un patient sur la page Enregistrer un Patient');
             window.location.href = '/appointments';
             return;
         }
         if (!selectedDoctorId) {
-            alert('⚠️ Veuillez sélectionner un docteur dans la liste');
+            alert(' Veuillez sélectionner un docteur dans la liste');
             return;
         }
         window.location.href = '/chat';
@@ -396,16 +396,16 @@
     }
 
     async function deleteAnyUser(username) {
-        if (!confirm(`⚠️ Êtes-vous sûr de vouloir supprimer définitivement le compte : ${username} ?`)) return;
+        if (!confirm(` Êtes-vous sûr de vouloir supprimer définitivement le compte : ${username} ?`)) return;
         
         try {
             const response = await fetch(`/api/users/${username}`, { method: 'DELETE' });
             if (response.ok) {
-                alert('✅ Compte supprimé avec succès');
+                alert(' Compte supprimé avec succès');
                 loadAllUsers();
                 loadDoctors(); // Sync doctors list if it was a doctor
             } else {
-                alert('❌ Erreur lors de la suppression');
+                alert(' Erreur lors de la suppression');
             }
         } catch (err) {
             console.error(err);

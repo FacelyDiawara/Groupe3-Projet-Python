@@ -56,8 +56,8 @@
     
     <!-- Boutons d'Action -->
     <div style="text-align: center; margin-top: 30px; padding-bottom: 50px;" class="no-print">
-        <button class="btn btn-primary" onclick="window.print()">🖨️ IMPRIMER / ENREGISTRER</button>
-        <button class="btn btn-danger" onclick="finishAndClear()">✅ TERMINER & TOUT EFFACER</button>
+        <button class="btn btn-primary" onclick="window.print()"> IMPRIMER / ENREGISTRER</button>
+        <button class="btn btn-danger" onclick="finishAndClear()"> TERMINER & TOUT EFFACER</button>
     </div>
 </div>
 
@@ -134,7 +134,7 @@
 
     // Fonction pour terminer, tout oublier et rediriger
     async function finishAndClear() {
-        if (confirm('⚠️ CONFIRMATION : L\'ordonnance sera enregistrée et les informations seront effacées du navigateur. Terminer ?')) {
+        if (confirm(' CONFIRMATION : L\'ordonnance sera enregistrée et les informations seront effacées du navigateur. Terminer ?')) {
             try {
                 // 1. Sauvegarder l'ordonnance en base de données avant d'effacer
                 const patientNom = sessionStorage.getItem('patientNom') || 'Anonyme';
@@ -172,11 +172,11 @@
                 sessionStorage.clear();
                 
                 // 3. Retour à l'accueil
-                alert('✅ Ordonnance enregistrée et dossier clôturé. Retour à l\'accueil.');
+                alert(' Ordonnance enregistrée et dossier clôturé. Retour à l\'accueil.');
                 window.location.href = '/';
             } catch (error) {
                 console.error('Erreur lors de l\'enregistrement:', error);
-                alert('❌ Erreur lors de l\'enregistrement de l\'ordonnance. Les données n\'ont pas été effacées.');
+                alert(' Erreur lors de l\'enregistrement de l\'ordonnance. Les données n\'ont pas été effacées.');
             }
         }
     }
